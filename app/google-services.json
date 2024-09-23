@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "117706082981",
+    "project_id": "musicstreamingapplicatio-e4f5d",
+    "storage_bucket": "musicstreamingapplicatio-e4f5d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:117706082981:android:dddb3057360a89c984db4c",
+        "android_client_info": {
+          "package_name": "com.hung.musicstreamingapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "117706082981-11h7i9goriv9qaoa8m0qoj8m0ssraq6q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hung.musicstreamingapplication",
+            "certificate_hash": "9884ca01f752e78efb2a50e9afd1a2d2d5a66722"
+          }
+        },
+        {
+          "client_id": "117706082981-f4qgdue4mnq7egk6d85op3f7335pn8bf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-7or86B-L0ISkbroUFbz8tHnb7ewI4ec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "117706082981-f4qgdue4mnq7egk6d85op3f7335pn8bf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

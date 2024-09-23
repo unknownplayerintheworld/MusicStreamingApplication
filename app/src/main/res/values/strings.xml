@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">MusicStreamingApplication</string>
+    <string name="default_web_client_id">117706082981-f4qgdue4mnq7egk6d85op3f7335pn8bf.apps.googleusercontent.com</string>
+
+    // label
+    <string name="journey">Khám phá</string>
+    <string name="recently">Gần đây</string>
+    <string name="recommend">Dành cho bạn</string>
+    <string name="hotAlbum">Album Hot</string>
+    <string name="trending">Thịnh hành</string>
+    // demo
+    <string name="music_name_demo">Music 1</string>
+    <string name="author_name_demo">Author 1</string>
+
+    //email report
+    <string name="verify_email">Verify email has been sent!</string>
+</resources>

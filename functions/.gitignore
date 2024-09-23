@@ -1,0 +1,7 @@
+node_modules/
+/config/
+*.local
+
+index.js
+package.json
+package-lock.json
