@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 @HiltAndroidApp
 open class MusicApplication: Application() {
     private lateinit var broadcastrcv: BroadcastReceiver
-    private val _playbackStateFlow = MutableStateFlow<String>("")
+    private val _playbackStateFlow = MutableStateFlow("")
     val playbackStateFlow: StateFlow<String> = _playbackStateFlow.asStateFlow()
     val currentPosition = MutableStateFlow(0L)
     val currentPos: StateFlow<Long> = currentPosition.asStateFlow()

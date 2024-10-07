@@ -22,7 +22,7 @@ class HomeViewModel @Inject constructor(
     private val _recentlySong = MutableStateFlow<List<Song>>(emptyList())
     val recentlySong = _recentlySong.asStateFlow()
 
-    private val _recommendSong = MutableStateFlow<Playlist>(Playlist())
+    private val _recommendSong = MutableStateFlow(Playlist())
     val recommendSong = _recommendSong.asStateFlow()
 
     private val _trending = MutableStateFlow<List<Song>>(emptyList())

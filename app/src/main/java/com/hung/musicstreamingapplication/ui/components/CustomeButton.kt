@@ -14,8 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun CustomButton(
@@ -24,7 +27,9 @@ fun CustomButton(
     textColor: Color = Color.Black,
     modifier: Modifier = Modifier,
     color: Color,
-    enabled: Boolean
+    enabled: Boolean,
+    fontSize:TextUnit = 16.sp,
+    fontWeight: FontWeight = FontWeight.Normal
 ) {
     Button(
         enabled = enabled,
@@ -36,7 +41,7 @@ fun CustomButton(
         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 4.dp, hoveredElevation = 16.dp),
         shape = CircleShape
         ) {
-            Text(text = text, color = textColor)
+            Text(text = text, color = textColor, fontSize = fontSize, fontWeight = fontWeight)
     }
 }
 @Preview(showBackground = true)

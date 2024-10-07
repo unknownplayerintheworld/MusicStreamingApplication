@@ -106,6 +106,7 @@ fun SignInWithGoogleBar(
         ) {
             Text(text = "Sign In", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(30.dp))
+            @Suppress("DEPRECATION")
             Divider(
                 modifier = Modifier
                     .height(20.dp)
@@ -199,6 +200,7 @@ fun SignInWithGoogleBar(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            @Suppress("DEPRECATION")
             Divider(
                 modifier = Modifier
                     .height(1.dp)
@@ -208,6 +210,7 @@ fun SignInWithGoogleBar(
             Spacer(modifier = Modifier.width(10.dp))
             Text(text = "or",color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.width(10.dp))
+            @Suppress("DEPRECATION")
             Divider(
                 modifier = Modifier
                     .height(1.dp)

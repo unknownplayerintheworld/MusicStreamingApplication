@@ -67,7 +67,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3:1.3.0")
     implementation("com.google.firebase:firebase-firestore:25.0.0")
     implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
     testImplementation("junit:junit:4.13.2")
@@ -107,6 +107,7 @@ dependencies {
 
     // encryptSharedPref
     implementation("androidx.security:security-crypto:1.1.0-alpha03")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.28.0")
     implementation("com.google.accompanist:accompanist-pager:0.24.13-rc")
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("androidx.media:media:1.7.0")

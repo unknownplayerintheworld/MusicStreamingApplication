@@ -86,6 +86,6 @@ fun show() {
     Column(
         Modifier.fillMaxSize()
     ) {
-
+        musicCardItem(song = Song())
     }
 }

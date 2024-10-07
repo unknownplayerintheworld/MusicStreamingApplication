@@ -10,7 +10,6 @@ import com.hung.musicstreamingapplication.domain.repository.SignUpRepository
 import com.hung.musicstreamingapplication.presentation.verify.EmailVerificationRequest
 import com.hung.musicstreamingapplication.presentation.verify.EmailVerificationResponse
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -30,7 +29,6 @@ class SignUpRepositoryImpl @Inject constructor(
     private val fbs: FirebaseAuthService
 ) : SignUpRepository{
 
-    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun signUp(email: String, username: String, password: String): Boolean {
         val email_trim = email.trim()
         try {

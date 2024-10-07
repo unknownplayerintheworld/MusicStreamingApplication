@@ -1,8 +1,8 @@
 package com.hung.musicstreamingapplication.data.model
 
 data class Author(
-    val id:String = "",
+    var id:String = "",
     val name:String = "",
     val bio: String = "",
-    val imageUrl: String = ""
+    val avatar: String = ""
 )

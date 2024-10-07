@@ -1,6 +1,8 @@
 package com.hung.musicstreamingapplication.service
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
@@ -42,7 +44,7 @@ class MusicService : Service() {
 
     private lateinit var notificationManager: NotificationManagerCompat
     private lateinit var mediaSession: MediaSessionCompat
-    var song:Song? = null
+    var song_not:Song? = null
     private lateinit var currentList: ArrayList<Song>
 
     @Inject
@@ -70,7 +72,7 @@ class MusicService : Service() {
             val duration = exoPlayer.duration
 
             updatePlaybackState(exoPlayer.isPlaying, currentPosition, duration)
-            updateNotification(song)
+            updateNotification(song_not)
 
             // Tiếp tục cập nhật mỗi giây
             handler.postDelayed(this, 1000)
@@ -196,7 +198,11 @@ class MusicService : Service() {
                 getPendingIntentForAction(ACTION_PLAY)
             )
         }
-
+//        mediaSession = MediaSessionCompat(this, "MusicService").apply {
+//            isActive = true
+//        }
+//        val metaData = MediaMetadataCompat.Builder()
+//            .putString()
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(song?.name)
             .setContentText(song?.authorName)
@@ -210,6 +216,7 @@ class MusicService : Service() {
                     .setMediaSession(mediaSession.sessionToken)
                     .setShowActionsInCompactView(1)
             )
+            .setProgress(exoPlayer.duration.toInt(),exoPlayer.currentPosition.toInt(),false)
             .build()
 
         // Update the existing notification
@@ -249,10 +256,6 @@ class MusicService : Service() {
         }
     }
 
-    fun seekTo(position: Long){
-        exoPlayer.seekTo(position)
-        sendPlayBackStateBroadcast("ACTION_PLAYBACK_POSITION")
-    }
 
     private fun sendPlayBackStateBroadcast(action: String){
         val intent = Intent(action)
@@ -270,62 +273,65 @@ class MusicService : Service() {
             intent?.getParcelableArrayListExtra("EXTRA_SONG_LIST", Song::class.java)
         } else {
             // API thấp hơn sử dụng phương thức cũ
+            @Suppress("DEPRECATION")
             intent?.getParcelableArrayListExtra("EXTRA_SONG_LIST")
         }
-        if (songList != null) {
-            currentList = songList
-        }
-        if (!songList.isNullOrEmpty()) {
-            // Tạo danh sách MediaItem từ danh sách Song và gán mediaId là id của bài hát
-            val mediaItems = songList.map { song ->
-                MediaItem.Builder()
-                    .setUri(song.link)   // Đặt URI cho bài hát
-                    .setMediaId(song.id)  // Đặt mediaId là id của bài hát
-                    .build()
+        val index : Int? = intent?.getIntExtra("INDEX_IN_LIST",0)
+        if(songList?.get(0)?.id == exoPlayer.currentMediaItem?.mediaId  ){
+            Log.d("MUSIC_SERVICE",songList?.get(0)?.name.toString())
+            startForegroundService(songList?.get(0))
+            songList?.get(0)?.let { sendCurrentSong(it) }
+            sendDurationBroadcast(exoPlayer.duration)
+        }else {
+            if (songList != null) {
+                currentList = songList
             }
+            if (!songList.isNullOrEmpty()) {
+                // Tạo danh sách MediaItem từ danh sách Song và gán mediaId là id của bài hát
+                val mediaItems = songList.map { song ->
+                    MediaItem.Builder()
+                        .setUri(song.link)   // Đặt URI cho bài hát
+                        .setMediaId(song.id)  // Đặt mediaId là id của bài hát
+                        .build()
+                }
 
-            // Thêm danh sách MediaItem vào ExoPlayer
-            exoPlayer.setMediaItems(mediaItems)
-            exoPlayer.prepare()
-            val currentMediaItem = exoPlayer.currentMediaItem
+                // Thêm danh sách MediaItem vào ExoPlayer
+                exoPlayer.setMediaItems(mediaItems)
+                exoPlayer.prepare()
+                if(index!=0){
+                    if (index != null) {
+                        exoPlayer.seekTo(index,0)
+                    }
+                }
+                val currentMediaItem = exoPlayer.currentMediaItem
 
-            // Nếu MediaItem đang phát không null, so sánh với currentList
-            if (currentMediaItem != null) {
-                val currentMediaId = currentMediaItem.mediaId
+                // Nếu MediaItem đang phát không null, so sánh với currentList
+                if (currentMediaItem != null) {
+                    val currentMediaId = currentMediaItem.mediaId
 
-                // Sử dụng map hoặc for-loop để so sánh với currentList
-                currentList.forEach { song ->
-                    if (song.id == currentMediaId) {
-                        // Đây là bài hát hiện đang phát
-                        startForegroundService(song)
-                        sendCurrentSong(song)
+                    // Sử dụng map hoặc for-loop để so sánh với currentList
+                    currentList.forEach { song ->
+                        if (song.id == currentMediaId) {
+                            // Đây là bài hát hiện đang phát
+                            startForegroundService(song)
+                            sendCurrentSong(song)
+                        }
                     }
                 }
             }
         }
-
-//        val musicUri = intent?.getParcelableExtra("EXTRA_MUSIC_URI",Song::class.java)
-//
-//        song = musicUri
-//        startForegroundService(song)
-//        if (musicUri != null) {
-//            // Tạo MediaItem với URI của bài hát
-//            val mediaItem = MediaItem.fromUri(musicUri.link)
-//            exoPlayer.setMediaItem(mediaItem)
-//            exoPlayer.prepare()
-//        }
         // Sử dụng Handler để đảm bảo chạy trên main thread
         val mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post {
             when (intent?.action) {
                 "ACTION_PLAY", ACTION_PLAY -> {
                     exoPlayer.play()
-                    updateNotification(song)
+                    updateNotification(song_not)
                     startUpdatingPosition()
                 }
                 "ACTION_PAUSE", ACTION_PAUSE -> {
                     exoPlayer.pause()
-                    updateNotification(song)
+                    updateNotification(song_not)
                 }
                 "ACTION_SEEK" -> {
                     val position = intent.getLongExtra("EXTRA_POSITION", 0L)
@@ -334,11 +340,11 @@ class MusicService : Service() {
                 "ACTION_RESUME" -> resumePlayback()
                 "ACTION_NEXT", ACTION_NEXT ->{
                     nextSong()
-                    updateNotification(song)
+                    updateNotification(song_not)
                 }
                 "ACTION_PREV", ACTION_PREVIOUS ->{
                     prevSong()
-                    updateNotification(song)
+                    updateNotification(song_not)
                 }
                 "ACTION_SHUFFLED" ->{
                     val isShuffled = intent.getBooleanExtra("IS_SHUFFLED",false)
@@ -351,7 +357,7 @@ class MusicService : Service() {
             }
         }
 
-        return START_NOT_STICKY
+        return START_STICKY
     }
     private fun updatePlaybackState(isPlaying: Boolean, currentPosition: Long, duration: Long) {
         val state = if (isPlaying) PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
@@ -379,7 +385,8 @@ class MusicService : Service() {
         TODO("Not yet implemented")
     }
     @OptIn(UnstableApi::class)
-    private fun startForegroundService(song:Song?) {
+    private fun startForegroundService(song: Song?) {
+        song_not = song
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permission = PermissionChecker.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
             if (permission != PermissionChecker.PERMISSION_GRANTED) {
@@ -388,12 +395,40 @@ class MusicService : Service() {
             }
         }
 
-        // Create MediaSessionCompat
+        // Tạo MediaSessionCompat và callback xử lý sự kiện
         mediaSession = MediaSessionCompat(this, "MusicService").apply {
+            setCallback(object : MediaSessionCompat.Callback() {
+                override fun onPlay() {
+                    super.onPlay()
+                    // Xử lý sự kiện Play
+                    exoPlayer.playWhenReady = true
+                    updateNotification(song) // Cập nhật notification khi chơi
+                }
+
+                override fun onPause() {
+                    super.onPause()
+                    // Xử lý sự kiện Pause
+                    exoPlayer.playWhenReady = false
+                    updateNotification(song) // Cập nhật notification khi tạm dừng
+                }
+
+            })
             isActive = true
         }
 
-        // Create notification actions (Previous, Play/Pause, Next)
+        // Tạo NotificationChannel nếu cần
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channelName = "Music Playback"
+            val descriptionText = "Channel for music playback controls"
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel(CHANNEL_ID, channelName, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // Tạo nút hành động trong notification (Previous, Play/Pause, Next)
         val playPauseAction = if (exoPlayer.isPlaying) {
             NotificationCompat.Action(
                 R.drawable.baseline_pause_24, "Pause",
@@ -411,18 +446,28 @@ class MusicService : Service() {
             .setContentText(song?.authorName)
             .setSmallIcon(R.drawable.baseline_music_note_24)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true) // Keep the notification ongoing
-            .addAction(NotificationCompat.Action(R.drawable.baseline_skip_previous_24, "Previous", getPendingIntentForAction(ACTION_PREVIOUS)))
+            .setOngoing(true)
+            .addAction(
+                NotificationCompat.Action(
+                    R.drawable.baseline_skip_previous_24, "Previous",
+                    getPendingIntentForAction(ACTION_PREVIOUS)
+                )
+            )
             .addAction(playPauseAction)
-            .addAction(NotificationCompat.Action(R.drawable.baseline_skip_next_24, "Next", getPendingIntentForAction(ACTION_NEXT)))
+            .addAction(
+                NotificationCompat.Action(
+                    R.drawable.baseline_skip_next_24, "Next",
+                    getPendingIntentForAction(ACTION_NEXT)
+                )
+            )
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
                     .setMediaSession(mediaSession.sessionToken)
-                    .setShowActionsInCompactView(1) // Only show play/pause in compact view
+                    .setShowActionsInCompactView(1) // Chỉ hiển thị play/pause ở chế độ compact
             )
             .build()
 
-        // Start the foreground service
+        // Bắt đầu foreground service với notification
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             ServiceCompat.startForeground(
                 this,
@@ -434,6 +479,7 @@ class MusicService : Service() {
             startForeground(NOTIFICATION_ID, notification)
         }
     }
+
     // Helper to create PendingIntent for notification actions
     private fun getPendingIntentForAction(action: String): PendingIntent {
         val intent = Intent(this, MusicService::class.java).apply {
@@ -441,7 +487,7 @@ class MusicService : Service() {
         }
         return PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
-    fun nextSong(){
+    private fun nextSong(){
         when (exoPlayer.repeatMode) {
             Player.REPEAT_MODE_OFF -> {
                 // Không lặp lại, nếu đến cuối danh sách thì không chuyển bài
@@ -463,7 +509,7 @@ class MusicService : Service() {
             }
         }
     }
-    fun prevSong(){
+    private fun prevSong(){
         when (exoPlayer.repeatMode) {
             Player.REPEAT_MODE_OFF -> {
                 // Không lặp lại, nếu đã là bài đầu tiên thì không chuyển bài
@@ -486,10 +532,10 @@ class MusicService : Service() {
             }
         }
     }
-    fun shuffledSong(boolean: Boolean){
+    private fun shuffledSong(boolean: Boolean){
         exoPlayer.shuffleModeEnabled = boolean
     }
-    fun repeatSong(repeatMode: Int) {
+    private fun repeatSong(repeatMode: Int) {
         when (repeatMode) {
             0 -> {
                 // Không lặp

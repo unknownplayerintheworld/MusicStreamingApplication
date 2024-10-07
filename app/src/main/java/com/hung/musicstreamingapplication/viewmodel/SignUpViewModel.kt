@@ -15,7 +15,7 @@ class SignUpViewModel @Inject constructor(
     private val _signUpState = MutableStateFlow(false)
     val signUpState = _signUpState.asStateFlow()
 
-    suspend fun signUp(email: String,username: String,password: String): Boolean{
+    private suspend fun signUp(email: String, username: String, password: String): Boolean{
         return signUpRepository.signUp(email,username,password)
     }
     fun updateSignUpState(email: String,username: String,password: String){

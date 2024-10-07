@@ -95,6 +95,7 @@ fun SignUpAccount(
                     navController.navigate("login")
                 })
             Spacer(modifier = Modifier.width(30.dp))
+            @Suppress("DEPRECATION")
             Divider(
                 modifier = Modifier
                     .height(20.dp)

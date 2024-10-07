@@ -8,10 +8,74 @@
     <string name="recommend">Dành cho bạn</string>
     <string name="hotAlbum">Album Hot</string>
     <string name="trending">Thịnh hành</string>
+    <string name="library">Thư viện</string>
     // demo
     <string name="music_name_demo">Music 1</string>
     <string name="author_name_demo">Author 1</string>
 
     //email report
     <string name="verify_email">Verify email has been sent!</string>
+
+    //search
+    <string name="recommend_for_you">Đề xuất cho bạn</string>
+    <string name="search_results">Kết quả tìm kiếm</string>
+    <string name="download_music_playlist">Tải xuống</string>
+    <string name="favourite">Yêu thích</string>
+    <string name="no_result_searching">Không có kết quả!</string>
+
+    //playlist
+    <string name="search_playlist">Tìm kiếm</string>
+    <string name="add_to_player">Thêm vào danh sách phát</string>
+    <string name="remove_from_playlist">Xóa khỏi danh sách</string>
+    <string name="add_to_library">Thêm vào thư viện</string>
+    <string name="share">Chia sẻ</string>
+    <string name="error_adding_playlist_empty">Không được để trống</string>
+    <string name="successful_adding_playlist">Thêm playlist thành công</string>
+    <string name="remove_song_playlist_toast">Xóa bài hát khỏi danh sách thành công!</string>
+    <string name="remove_song_playlist_error">Xóa bài hát khỏi danh sách thất bại!</string>
+    <string name="add_song_to_playlist">Thêm</string>
+
+    //library
+    <string name="recently_play">Nghe gần đây</string>
+    <string name="add_Playlist">Tạo Playlist mới</string>
+    <string name="no_element">Không có phần tử nào</string>
+    <string name="add_text">Thêm 1 danh sách mới?</string>
+
+    // profile
+    <string name="personal">Cá nhân</string>
+    <string name="upgrade">Nâng cấp tài khoản</string>
+    <string name="price_options_1">15.000đ</string>
+    <string name="product_price_option_1">Nghe nhạc chất lượng cao,không quảng cáo,không giới hạn playlist</string>
+    <string name="cancel_ads_text">Loại bỏ quảng cáo</string>
+    <string name="download_music_text">Lữu trữ nhạc không giới hạn</string>
+    <string name="playlist_unlimited_text">Tạo playlist không giới hạn</string>
+    <string name="setting">Cài đặt</string>
+    <string name="player">Trình phát nhạc</string>
+    <string name="version_number">1.0.0</string>
+
+    <string name="author">Nghệ sĩ</string>
+    <string name="upload">Tải lên</string>
+    <string name="play">Phát Nhạc</string>
+    <string name="follow">Quan tâm</string>
+    <string name="hot_song">Bài hát nổi bật</string>
+    <string name="more">Xem thêm</string>
+    <string name="no_songs_available">Không có lịch sử đã nghe!</string>
+    <string name="interface_ui">Giao diện</string>
+    <string name="version">Phiên bản</string>
+    <string name="support_and_report">trợ giúp và báo lỗi</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="remove_acc">Xóa tài khoản</string>
+    <string name="download_text">tải xuống</string>
+    <string name="notification">Thông báo</string>
+
+    //playing
+    <string name="no_lyrics">Lyrics không có sẵn cho bài hát này!</string>
+    <string name="reply">Trả lời</string>
+    <string name="reply_to">Trả lời cho </string>
+    <string name="comment">Comment</string>
+    <string name="write_a_comment">Viết bình luận</string>
+    <string name="successful_comment">Viết bình luận thành công!</string>
+    <string name="failure_comment">Viết bình luận thất bại!</string>
+    <string name="comment_of">Bình luận của </string>
+    <string name="del_comment">Xóa bình luận </string>
 </resources>

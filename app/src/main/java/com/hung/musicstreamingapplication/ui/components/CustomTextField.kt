@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hung.musicstreamingapplication.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomeTextField(
     value: String,
@@ -82,13 +81,14 @@ fun CustomeTextField(
                 Icon(imageVector = imageVector, contentDescription = "Username")
             }
         },
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent, // Ẩn đường viền khi được focus
             unfocusedIndicatorColor = Color.Transparent // Ẩn đường viền khi không được focus
         ),
         modifier = Modifier
             .padding(10.dp, 10.dp, 10.dp, 0.dp)
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clip(RoundedCornerShape(10.dp))
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
                     onCleareErr()
@@ -108,7 +108,6 @@ fun CustomeTextField(
         Spacer(modifier = Modifier.height(14.dp))
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomePasswordField(
     value: String,
@@ -143,7 +142,7 @@ fun CustomePasswordField(
                 fontFamily = FontFamily.SansSerif
             )
         },
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent, // Ẩn đường viền khi được focus
             unfocusedIndicatorColor = Color.Transparent // Ẩn đường viền khi không được focus
         ),
@@ -151,6 +150,7 @@ fun CustomePasswordField(
         visualTransformation = visualTransformation,
         modifier = Modifier
             .padding(10.dp,10.dp,10.dp,0.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
                     onCleardErr()
@@ -191,7 +191,6 @@ fun CustomePasswordField(
         Spacer(modifier = Modifier.height(14.dp))
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomeRePasswordField(
     value: String,
@@ -221,14 +220,15 @@ fun CustomeRePasswordField(
                 fontFamily = FontFamily.SansSerif
             )
         },
-        colors = TextFieldDefaults.textFieldColors(
+        colors = TextFieldDefaults.colors(
             focusedIndicatorColor = Color.Transparent, // Ẩn đường viền khi được focus
             unfocusedIndicatorColor = Color.Transparent // Ẩn đường viền khi không được focus
         ),
         textStyle = TextStyle(textAlign = TextAlign.Center),
         visualTransformation = visualTransformation,
         modifier = Modifier
-            .padding(5.dp,10.dp,10.dp,0.dp),
+            .padding(5.dp,10.dp,10.dp,0.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(20.dp),
         trailingIcon = {
             IconButton(onClick = {   }) {

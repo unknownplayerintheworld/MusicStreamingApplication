@@ -20,7 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -106,7 +106,9 @@ import kotlinx.coroutines.delay
                 IconButton(onClick = { /*TODO*/ }) {
                     Icon(imageVector = Icons.Default.Notifications, contentDescription = "Mic", modifier = Modifier.size(25.dp), tint = MaterialTheme.colorScheme.onBackground)
                 }
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = {
+                    navController.navigate("search")
+                }) {
                     Icon(imageVector = Icons.Default.Search, contentDescription = "Search",tint = MaterialTheme.colorScheme.onBackground, modifier = Modifier.size(25.dp))
                 }
             }
@@ -128,7 +130,7 @@ import kotlinx.coroutines.delay
                                 .height(200.dp)
                                 .padding(0.dp, 0.dp, 10.dp, 0.dp)
                                 .clickable {
-                                    musicVM.startMusicService(listsong.get(it))
+                                    musicVM.startMusicService(listsong[it])
                                     navController.navigate("playing")
                                 },
                             shape = RoundedCornerShape(10.dp),
@@ -141,7 +143,7 @@ import kotlinx.coroutines.delay
                             ) {
                                 Image(
                                     painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
-                                        LocalContext.current).data(listsong.get(it).imageUrl).crossfade(true).build()),
+                                        LocalContext.current).data(listsong[it].imageUrl).crossfade(true).build()),
                                     contentDescription = "journey",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.fillMaxSize()
@@ -165,7 +167,7 @@ import kotlinx.coroutines.delay
                                         .padding(10.dp), contentAlignment = Alignment.BottomStart
                                 ) {
                                     Text(
-                                        listsong.get(it).name,
+                                        listsong[it].name,
                                         style = TextStyle(color = Color.White, fontSize = 16.sp)
                                     )
                                 }
@@ -191,12 +193,14 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun RecentTrack(
-    list: List<Song>
+    list: List<Song>?,
+    navController: NavHostController,
+    musicVM: MusicViewModel
 ) {
     var listsong by remember {
         mutableStateOf(emptyList<Song>())
     }
-    listsong = list
+    listsong = list ?: emptyList() // Gán list nếu không null, ngược lại là danh sách rỗng
 
     // Chia danh sách thành các nhóm, mỗi nhóm 4 phần tử
     val groupedSongs = listsong.chunked(4)
@@ -220,71 +224,90 @@ fun RecentTrack(
                 modifier = Modifier.padding(10.dp, 0.dp, 0.dp, 0.dp)
             )
             IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "arrow right")
+                Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "arrow right")
             }
         }
 
-        // Hiển thị LazyRow chứa các nhóm
-        LazyRow(
-            contentPadding = PaddingValues(10.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(groupedSongs) { songGroup ->
-                // Mỗi item trong LazyRow sẽ là một nhóm chứa tối đa 4 bài hát
-                Column(
-                    Modifier.fillParentMaxSize()
-                ) {
-                    songGroup.forEach { song ->
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(60.dp)
-                                .clickable {
-
-                                }
-                        ) {
-                            Card(
-                                modifier = Modifier
-                                    .width(65.dp)
-                                    .height(60.dp)
-                                    .padding(0.dp, 0.dp, 10.dp, 15.dp),
-                                shape = RoundedCornerShape(10.dp),
-                                elevation = CardDefaults.cardElevation(
-                                    defaultElevation = 5.dp
-                                )
-                            ) {
-                                Image(
-                                    painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
-                                        LocalContext.current).data(song.imageUrl).crossfade(true).build()),
-                                    contentDescription = "recently",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-
+        // Kiểm tra nếu danh sách rỗng hoặc null
+        if (listsong.isEmpty()) {
+            // Hiển thị văn bản khi danh sách trống
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(id = R.string.no_songs_available), // Chuỗi văn bản thay thế
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        } else {
+            // Hiển thị LazyRow chứa các nhóm nếu có phần tử
+            LazyRow(
+                contentPadding = PaddingValues(10.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(groupedSongs) { songGroup ->
+                    // Mỗi item trong LazyRow sẽ là một nhóm chứa tối đa 4 bài hát
+                    Column(
+                        Modifier.fillParentMaxSize()
+                    ) {
+                        songGroup.forEach { song ->
                             Row(
                                 Modifier
-                                    .fillMaxSize()
-                                    .padding(0.dp, 0.dp, 10.dp, 15.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        musicVM.startMusicService(song)
+                                        navController.navigate("playing")
+                                    }
+                                    .height(60.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Column {
-                                    Text(
-                                        text = song.name,
-                                        modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp),
-                                        fontWeight = FontWeight.Bold
+                                Card(
+                                    modifier = Modifier
+                                        .width(60.dp)
+                                        .height(60.dp)
+                                        .padding(0.dp, 0.dp, 10.dp, 15.dp),
+                                    shape = RoundedCornerShape(10.dp),
+                                    elevation = CardDefaults.cardElevation(
+                                        defaultElevation = 5.dp
                                     )
-                                    Text(
-                                        text = song.authorName ?: "Unknown",
-                                        fontWeight = FontWeight.Light
+                                ) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
+                                            LocalContext.current).data(song.imageUrl).crossfade(true).build()),
+                                        contentDescription = "recently",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
                                     )
                                 }
-                                IconButton(onClick = { /*TODO*/ }) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.more_vert_24),
-                                        contentDescription = "More options"
-                                    )
+
+                                Row(
+                                    Modifier
+                                        .fillMaxSize()
+                                        .padding(0.dp, 0.dp, 10.dp, 15.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = song.name,
+                                            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 3.dp),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = song.authorName ?: "Unknown",
+                                            fontWeight = FontWeight.Light,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+                                    IconButton(onClick = { /*TODO*/ }) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.more_vert_24),
+                                            contentDescription = "More options"
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -297,7 +320,11 @@ fun RecentTrack(
 
 
 @Composable
-fun Recommend(playlist: Playlist) {
+fun Recommend(
+    playlist: Playlist,
+    navController: NavHostController,
+    musicVM:MusicViewModel
+    ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp - 10.dp
     Column(
         Modifier
@@ -312,7 +339,7 @@ fun Recommend(playlist: Playlist) {
         ) {
             Text(text = stringResource(id = R.string.recommend), color = MaterialTheme.colorScheme.onBackground, fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(10.dp,0.dp,0.dp,0.dp))
             IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "arrow right")
+                Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "arrow right")
             }
         }
         LazyRow(
@@ -325,6 +352,10 @@ fun Recommend(playlist: Playlist) {
                     modifier = Modifier
                         .width((screenWidth / 3) + screenWidth / 8)
                         .height(200.dp)
+                        .clickable {
+                            navController.navigate("playlist")
+                            musicVM.playlistClicked(playlist)
+                        }
                         .padding(0.dp, 0.dp, 10.dp, 0.dp),
                     shape = RoundedCornerShape(10.dp),
                     elevation = CardDefaults.cardElevation(
@@ -386,7 +417,9 @@ fun Recommend(playlist: Playlist) {
 
 @Composable
 fun HotAlbum(
-    list: List<Album>
+    list: List<Album>,
+    navController: NavHostController,
+    musicVM: MusicViewModel
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp - 10.dp
     Column(
@@ -402,7 +435,7 @@ fun HotAlbum(
         ) {
             Text(text = stringResource(id = R.string.hotAlbum), color = MaterialTheme.colorScheme.onBackground, fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(10.dp,0.dp,0.dp,0.dp))
             IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "arrow right")
+                Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "arrow right")
             }
         }
         LazyRow(
@@ -415,6 +448,10 @@ fun HotAlbum(
                     modifier = Modifier
                         .width(screenWidth / 2)
                         .height(200.dp)
+                        .clickable {
+                            navController.navigate("playlist")
+                            musicVM.albumClicked(album = list[it])
+                        }
                         .padding(0.dp, 0.dp, 10.dp, 0.dp),
                     shape = RoundedCornerShape(10.dp),
                     elevation = CardDefaults.cardElevation(
@@ -473,7 +510,9 @@ fun HotAlbum(
 
 @Composable
 fun Trending(
-    list: List<Song>
+    list: List<Song>,
+    musicVM: MusicViewModel,
+    navController: NavHostController
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp - 10.dp
 
@@ -502,7 +541,7 @@ fun Trending(
                 modifier = Modifier.padding(10.dp, 0.dp, 0.dp, 0.dp)
             )
             IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "arrow right")
+                Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "arrow right")
             }
         }
 
@@ -512,6 +551,10 @@ fun Trending(
                 modifier = Modifier
                     .width(screenWidth)
                     .height(200.dp)
+                    .clickable {
+                        musicVM.startMusicService(song = song)
+                        navController.navigate("playing")
+                    }
                     .padding(10.dp, 0.dp, 0.dp, 0.dp),
                 shape = RoundedCornerShape(10.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
@@ -578,11 +621,15 @@ fun Trending(
                         Row(
                             Modifier
                                 .fillMaxWidth()
+                                .clickable {
+                                    musicVM.startMusicService(song)
+                                    navController.navigate("playing")
+                                }
                                 .height(60.dp)
                         ) {
                             Card(
                                 modifier = Modifier
-                                    .width(65.dp)
+                                    .width(60.dp)
                                     .height(60.dp)
                                     .padding(0.dp, 0.dp, 10.dp, 15.dp),
                                 shape = RoundedCornerShape(10.dp),
@@ -605,10 +652,10 @@ fun Trending(
                                 Column {
                                     Text(
                                         text = song.name,
-                                        modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 8.dp),
+                                        modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 3.dp),
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Text(text = song.authorName ?: "Unknown Author", fontWeight = FontWeight.Light)
+                                    Text(text = song.authorName ?: "Unknown Author", fontWeight = FontWeight.Light, fontSize = 13.sp)
                                 }
                                 IconButton(onClick = { /*TODO*/ }) {
                                     Icon(

@@ -21,7 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.hung.musicstreamingapplication.activity.MainActivity
 import com.hung.musicstreamingapplication.presentation.sign_in.GoogleAuthUIClient
-import com.hung.musicstreamingapplication.ui.screen.HeaderHome
 import com.hung.musicstreamingapplication.ui.screen.SignInWithGoogleBar
 import com.hung.musicstreamingapplication.ui.screen.SignUpAccount
 import com.hung.musicstreamingapplication.viewmodel.LoginViewModel
@@ -43,6 +42,7 @@ fun AppNavHost(
     val pressSignIn by viewmodel.pressSignIn.collectAsState()
     val context = LocalContext.current
     viewmodel.loginState()
+    Log.d("LOGIN_STATE",loginstate.toString())
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
             LaunchedEffect(loginstate) {
@@ -50,8 +50,6 @@ fun AppNavHost(
                     // Create intent to navigate to the other Activity
                     val intent = Intent(context, MainActivity::class.java)
                     context.startActivity(intent)
-                } else {
-                    navController.navigate("login")
                 }
             }
             val launcher = rememberLauncherForActivityResult(
@@ -76,27 +74,30 @@ fun AppNavHost(
                     ).show()
                     googleAuth.getSignedInUser()?.let { it1 ->
                         viewmodel.addUser(it1, onSuccess = {
-                            Log.e("CreateUser","$it")
-                            Toast.makeText(context,"Success",Toast.LENGTH_SHORT)
-                        }, onFailure = { it -> Log.e("CreateUser","Failed to create user:$it")
-                            Toast.makeText(context,"Failed",Toast.LENGTH_SHORT)
+                            Log.e("CreateUser", it)
+                            Toast.makeText(context,"Success",Toast.LENGTH_SHORT).show()
+                        }, onFailure = {
+                            Log.e("CreateUser","Failed to create user:$it")
+                            Toast.makeText(context,"Failed",Toast.LENGTH_SHORT).show()
                         })
-                        viewmodel.getUser()
                     }
-                    navController.navigate("home")
+                    val intent = Intent(context,MainActivity::class.java)
+                    context.startActivity(intent)
                     viewmodel.resetState()
                 }
             }
             SignInWithGoogleBar(navController = navController, state = state, onSignInWithGG = {
-            lifecycleScope.launch {
-                val signInIntentSender = googleAuth.signIn()
-                launcher.launch(
-                    IntentSenderRequest.Builder(
-                        signInIntentSender ?: return@launch
-                    ).build()
-                )
-            }
-        }, onSignInClick = { username,password ->
+                hasLoggedInAttempt = true
+                lifecycleScope.launch {
+                    val signInIntentSender = googleAuth.signIn()
+                    launcher.launch(
+                        IntentSenderRequest.Builder(
+                            signInIntentSender ?: return@launch
+                        ).build()
+                    )
+                }
+            }, onSignInClick = { username,password ->
+                hasLoggedInAttempt = true
                 lifecycleScope.launch {
                     viewmodel.loginWithEmail(username,password)
                 }
@@ -108,16 +109,15 @@ fun AppNavHost(
                         val intent = Intent(navController.context, MainActivity::class.java)
                         navController.context.startActivity(intent)
                     } else {
-                        Toast.makeText(context, "Wrong password", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Wrong information!", Toast.LENGTH_SHORT).show()
                     }
                 }
-                hasLoggedInAttempt = true
             }
         }
         composable("signup") {
             val signUpState by signupviewmodel.signUpState.collectAsState()
             SignUpAccount(navController = navController, onSignUpClick = {
-                email,username,password ->
+                    email,username,password ->
                 lifecycleScope.launch{
                     signupviewmodel.updateSignUpState(email,username,password)
                 }

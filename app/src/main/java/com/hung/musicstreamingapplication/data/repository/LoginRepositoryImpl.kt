@@ -1,15 +1,17 @@
 package com.hung.musicstreamingapplication.data.repository
 
 import android.util.Log
-import android.widget.Toast
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-import com.hung.musicstreamingapplication.data.remote.LoginAPI
+import com.hung.musicstreamingapplication.data.model.User
 import com.hung.musicstreamingapplication.domain.repository.LoginRepository
 import com.hung.musicstreamingapplication.presentation.sign_in.UserData
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class LoginRepositoryImpl @Inject constructor(
     private val db: FirebaseFirestore,
@@ -28,7 +30,7 @@ class LoginRepositoryImpl @Inject constructor(
             "userID" to userData.userId,
             "username" to userData.username,
             "profilePicture" to userData.profilePictureUrl,
-            "createdAt" to System.currentTimeMillis()
+            "createdAt" to Timestamp.now()
         )
         val documentRef = db.collection("users").document(userData.userId)
         documentRef.get()
@@ -50,19 +52,32 @@ class LoginRepositoryImpl @Inject constructor(
             }
     }
 
-    override suspend fun GetUserFromDB() {
-        db.collection("users")
-            .get()
-            .addOnSuccessListener { result ->
-                // Lặp qua từng tài liệu và hiển thị dữ liệu ra log
-                for (document in result) {
-                    Log.d("FirestoreData", "Document ID: ${document.id}")
-                    Log.d("FirestoreData", "Data: ${document.data}")
-                }
+    override suspend fun GetUserFromDB(userID: String): User {
+        return try {
+            suspendCancellableCoroutine { continuation ->
+                db.collection("users")
+                    .document(userID)
+                    .get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            // Chuyển dữ liệu từ tài liệu sang đối tượng User
+                            val user = document.toObject(User::class.java)?.copy(userID = document.id)
+                            Log.d("FirestoreData", "Retrieved User: $user")
+                            continuation.resume(user ?: User()) // Trả về user nếu không null, ngược lại trả về User mặc định
+                        } else {
+                            Log.d("FirestoreData", "No user found with ID: $userID")
+                            continuation.resume(User()) // Trả về User mặc định nếu không tìm thấy
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+                        Log.e("FirestoreError", "Error getting document: ", exception)
+                        continuation.resumeWithException(exception) // Ném ra exception nếu có lỗi
+                    }
             }
-            .addOnFailureListener { exception ->
-                Log.e("FirestoreError", "Error getting documents: ", exception)
-            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            User() // Trả về User mặc định nếu có lỗi
+        }
     }
 
     override suspend fun loginWithEmailorUsername(identifier: String, password: String): Boolean {
@@ -78,7 +93,7 @@ class LoginRepositoryImpl @Inject constructor(
                 // Kiểm tra thông tin người dùng trong Firestore
                 val userDocument = db.collection("users").document(user.uid).get().await()
                 if (userDocument.exists()) {
-                    val userData = userDocument.data
+                    userDocument.data
                     // Bạn có thể kiểm tra thêm thông tin nếu cần
                     return true
                 } else {
@@ -116,5 +131,15 @@ class LoginRepositoryImpl @Inject constructor(
 
     override fun getCurrentUserID(): String? {
         return fb.currentUser?.uid
+    }
+
+    override suspend fun logout(): Boolean {
+        fb.signOut()
+        return try{
+            fb.currentUser==null
+        }catch(e: Exception){
+            Log.e("Exception in Login REPOSITORY",e.message.toString())
+            false
+        }
     }
 }
