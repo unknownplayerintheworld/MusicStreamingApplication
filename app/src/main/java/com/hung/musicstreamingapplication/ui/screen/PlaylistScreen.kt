@@ -93,6 +93,7 @@ fun PlaylistScreen(
     val isAlbumOrPlaylist by musicVM.isClickedAlbumOrPlaylist.collectAsState()
     val userID by loginVM._currentUserId.collectAsState()
     val isCreator by musicVM.isUserCreatedPlaylist.collectAsState()
+    val isDownloadSuccessful by musicVM.isDownloadSuccessful.collectAsState()
     if(isAlbumOrPlaylist==2){
         userID?.let{
             musicVM.getFavouriteAlbumStatus(it, albumID = album.id)
@@ -102,6 +103,13 @@ fun PlaylistScreen(
     else {
         userID?.let { musicVM.getFavouriteStatus(it, playlistID = playlist.id) }
         musicVM.getSongFromPlaylist(playlistID = playlist.id)
+    }
+    LaunchedEffect(isDownloadSuccessful) {
+        if(isDownloadSuccessful == 1){
+            Toast.makeText(context,R.string.download_successful,Toast.LENGTH_SHORT).show()
+        }else if(isDownloadSuccessful == 0){
+            Toast.makeText(context,R.string.download_failure,Toast.LENGTH_SHORT).show()
+        }
     }
     LaunchedEffect(Unit){
         userID?.let { musicVM.checkUserCreatedPlaylist(it,playlist) }
@@ -263,7 +271,7 @@ fun PlaylistScreen(
         ) {
             LazyColumn{
                 items(songs.size){
-                    itemRowMusicPlaylist(it,navController = navController, song = songs[it], list = songs, musicVM = musicVM, playlist = playlist)
+                    itemRowMusicPlaylist(it,navController = navController, song = songs[it], list = songs, musicVM = musicVM, playlist = playlist, loginVM = loginVM)
                 }
             }
         }
@@ -378,7 +386,7 @@ fun PlaylistScreen(
                     ) {
                         Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Fav")
                         Spacer(Modifier.width(10.dp))
-                        Text(text = stringResource(id = R.string.add_to_library), fontSize = 14.sp)
+                        Text(text = stringResource(id = R.string.add_to_fav), fontSize = 14.sp)
                     }
                     Row(
                         Modifier

@@ -12,6 +12,7 @@
     // demo
     <string name="music_name_demo">Music 1</string>
     <string name="author_name_demo">Author 1</string>
+    <string name="music_newest">Bài hát mới</string>
 
     //email report
     <string name="verify_email">Verify email has been sent!</string>
@@ -27,19 +28,32 @@
     <string name="search_playlist">Tìm kiếm</string>
     <string name="add_to_player">Thêm vào danh sách phát</string>
     <string name="remove_from_playlist">Xóa khỏi danh sách</string>
-    <string name="add_to_library">Thêm vào thư viện</string>
+    <string name="add_to_fav">Thêm vào danh sách yêu thích</string>
+    <string name="remove_from_fav">Xóa khỏi danh sách yêu thích</string>
     <string name="share">Chia sẻ</string>
     <string name="error_adding_playlist_empty">Không được để trống</string>
     <string name="successful_adding_playlist">Thêm playlist thành công</string>
     <string name="remove_song_playlist_toast">Xóa bài hát khỏi danh sách thành công!</string>
     <string name="remove_song_playlist_error">Xóa bài hát khỏi danh sách thất bại!</string>
     <string name="add_song_to_playlist">Thêm</string>
+    <string name="download_successful">Download thành công!</string>
+    <string name="download_failure">Download thất bại!</string>
 
     //library
     <string name="recently_play">Nghe gần đây</string>
     <string name="add_Playlist">Tạo Playlist mới</string>
     <string name="no_element">Không có phần tử nào</string>
     <string name="add_text">Thêm 1 danh sách mới?</string>
+    <string name="downloaded">Đã tải</string>
+    <string name="song">Bài hát</string>
+    <string name="random_playing_lib">Phát ngẫu nhiên</string>
+    <string name="filter">Lọc</string>
+    <string name="newest">Mới nhất</string>
+    <string name="add_to_fav_success">Thêm thành công bài hát vào yêu thích!</string>
+    <string name="add_to_fav_failure">Thêm bài hát thất bại!</string>
+    <string name="del_from_fav_success">Xóa thành công bài hát khỏi yêu thích!</string>
+    <string name="del_from_fav_failure">Xóa bài hát khỏi yêu thích thất bại!</string>
+
 
     // profile
     <string name="personal">Cá nhân</string>
@@ -52,6 +66,7 @@
     <string name="setting">Cài đặt</string>
     <string name="player">Trình phát nhạc</string>
     <string name="version_number">1.0.0</string>
+    <string name="MUSA_plus_description">Nghe nhạc chất lượng cao,không quảng cáo,không giới hạn playlist</string>
 
     <string name="author">Nghệ sĩ</string>
     <string name="upload">Tải lên</string>
@@ -78,4 +93,5 @@
     <string name="failure_comment">Viết bình luận thất bại!</string>
     <string name="comment_of">Bình luận của </string>
     <string name="del_comment">Xóa bình luận </string>
+
 </resources>

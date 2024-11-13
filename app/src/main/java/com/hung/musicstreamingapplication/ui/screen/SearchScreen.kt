@@ -54,13 +54,15 @@ import com.hung.musicstreamingapplication.ui.components.itemRowAlbum
 import com.hung.musicstreamingapplication.ui.components.itemRowAuthor
 import com.hung.musicstreamingapplication.ui.components.itemRowMusic
 import com.hung.musicstreamingapplication.ui.components.itemRowPlaylist
+import com.hung.musicstreamingapplication.viewmodel.LoginViewModel
 import com.hung.musicstreamingapplication.viewmodel.MusicViewModel
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SearchScreen(
     musicVM : MusicViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    loginVM: LoginViewModel
 ) {
     var searchText by remember {
         mutableStateOf("")
@@ -187,7 +189,7 @@ fun SearchScreen(
 
                     // Nội dung tương ứng với mỗi tab
                     when (selectedTabIndex) { 
-                        0 -> SongsContent(musicVM = musicVM, navController = navController)    // Nội dung cho tab "Bài hát"
+                        0 -> SongsContent(musicVM = musicVM, navController = navController, loginVM = loginVM)    // Nội dung cho tab "Bài hát"
                         1 -> PlaylistContent(musicVM = musicVM, navController = navController) // Nội dung cho tab "Playlist"
                         2 -> AlbumContent(musicVM = musicVM, navController = navController)    // Nội dung cho tab "Album"
                         3 -> ArtistContent(musicVM = musicVM, navController = navController)   // Nội dung cho tab "Nghệ sĩ"
@@ -364,7 +366,8 @@ fun PlaylistContent(
 @Composable
 fun SongsContent(
     musicVM: MusicViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    loginVM: LoginViewModel
 ) {
     val songs by musicVM.searchSong.collectAsState()
     Column(
@@ -387,7 +390,7 @@ fun SongsContent(
             modifier = Modifier.fillMaxSize()
         ){
             items(songs.size){
-                itemRowMusic(musicVM = musicVM, navController = navController, song = songs[it])
+                itemRowMusic(musicVM = musicVM, navController = navController, song = songs[it], loginVM = loginVM)
             }
         }
         if(songs.isNullOrEmpty()){

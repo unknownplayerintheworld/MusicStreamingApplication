@@ -55,6 +55,7 @@ import com.hung.musicstreamingapplication.data.model.Author
 import com.hung.musicstreamingapplication.ui.components.CardAlbumItem
 import com.hung.musicstreamingapplication.ui.components.CustomButton
 import com.hung.musicstreamingapplication.ui.components.itemRowMusic
+import com.hung.musicstreamingapplication.viewmodel.LoginViewModel
 import com.hung.musicstreamingapplication.viewmodel.MusicViewModel
 
 @SuppressLint("SuspiciousIndentation")
@@ -62,6 +63,7 @@ import com.hung.musicstreamingapplication.viewmodel.MusicViewModel
 fun AuthorScreen(
     musicVM: MusicViewModel,
     navController: NavHostController,
+    loginVM:LoginViewModel,
     author: Author
 ) {
     val hotSongArtists by musicVM.hotAuthorSong.collectAsState()
@@ -243,7 +245,7 @@ fun AuthorScreen(
                         .height(330.dp)
                 ) {
                     items(hotSongArtists.size) {
-                        itemRowMusic(musicVM = musicVM, navController = navController, song = hotSongArtists[it])
+                        itemRowMusic(musicVM = musicVM, navController = navController, song = hotSongArtists[it], loginVM = loginVM)
                     }
                 }
                 Row(
@@ -295,7 +297,7 @@ fun AuthorScreen(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(start = 15.dp, top = 10.dp, end = 10.dp)
+                    .padding(start = 15.dp, top = 10.dp, end = 10.dp,bottom = 130.dp)
                     .background(MaterialTheme.colorScheme.background)
             ) {
                 Text(

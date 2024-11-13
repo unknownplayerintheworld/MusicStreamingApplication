@@ -221,7 +221,7 @@ fun ProfileScreen(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(horizontal = 15.dp, vertical = 5.dp))
-            Text(text = "Nghe nhạc chất lượng cao,không quảng cáo,không giới hạn playlist", fontWeight = FontWeight.Light, fontSize = 15.sp,color = MaterialTheme.colorScheme.onBackground
+            Text(text = stringResource(R.string.MUSA_plus_description), fontWeight = FontWeight.Light, fontSize = 15.sp,color = MaterialTheme.colorScheme.onBackground
             , modifier = Modifier.padding(horizontal = 15.dp))
             Row(
                 Modifier

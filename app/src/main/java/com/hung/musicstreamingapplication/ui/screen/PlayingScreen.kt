@@ -38,6 +38,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Badge
@@ -133,6 +134,10 @@ fun PlayingScreen(
     var currentSong by remember { mutableStateOf<Song?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var isHistoryUpdated = remember { mutableStateOf(false) }
+    val favSongList by musicVM.favSongList.collectAsState()
+    LaunchedEffect(Unit) {
+        userID?.let { musicVM.getFavSongList(it) }
+    }
     LaunchedEffect(isCommentSuccess){
         if(isCommentSuccess == 1){
             Toast.makeText(context, R.string.successful_comment,Toast.LENGTH_SHORT).show()
@@ -171,6 +176,7 @@ fun PlayingScreen(
             durationState.value = duration
         }
     })
+    val isDownloadSuccessful by musicVM.isDownloadSuccessful.collectAsState()
     val currentState by musicVM.currentState.collectAsState()
     val currentPosition by musicVM.currentPos.collectAsState()
     var isPlaying by remember { mutableStateOf(true) }
@@ -195,6 +201,14 @@ fun PlayingScreen(
         onDispose {
             LocalBroadcastManager.getInstance(context).unregisterReceiver(songReceiver.value)
         }
+    }
+    LaunchedEffect(isDownloadSuccessful) {
+        if(isDownloadSuccessful == 1){
+            Toast.makeText(context,R.string.download_successful,Toast.LENGTH_SHORT).show()
+        }else{
+            Toast.makeText(context,R.string.download_failure,Toast.LENGTH_SHORT).show()
+        }
+        musicVM.resetDownloadingState()
     }
     DisposableEffect(context){
         LocalBroadcastManager.getInstance(context).registerReceiver(
@@ -357,7 +371,11 @@ fun PlayingScreen(
                                                         painter = rememberAsyncImagePainter(
                                                             model = ImageRequest.Builder(
                                                                 LocalContext.current
-                                                            ).data(currentSong?.imageUrl)
+                                                            ).data(if(!currentSong?.imageUrl.isNullOrEmpty()){
+                                                                currentSong?.imageUrl
+                                                            }else{
+                                                                R.drawable.d3650077420d928b587a1feb77fa94cb
+                                                            })
                                                                 .crossfade(true)
                                                                 .build()
                                                         ),
@@ -405,11 +423,36 @@ fun PlayingScreen(
                                                     )
                                                 }
                                             }
-                                            IconButton(onClick = { /*TODO*/ }) {
+                                            IconButton(onClick = {
+                                                if(favSongList.any { it.id == currentSong?.id }){
+                                                    userID?.let { currentSong?.let { it1 ->
+                                                        musicVM.delSongFromFav(it,
+                                                            it1
+                                                        )
+                                                    } }
+                                                }else{
+                                                    currentSong?.let {
+                                                        userID?.let { it1 ->
+                                                            musicVM.addSongToFav(
+                                                                it1,
+                                                                it
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                                userID?.let { musicVM.getFavSongList(it) }
+                                            }) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.FavoriteBorder,
+                                                    imageVector = if(favSongList.any
+                                                        { it.id == currentSong?.id }){
+                                                        Icons.Default.Favorite
+                                                    }
+                                                    else
+                                                    {
+                                                        Icons.Outlined.FavoriteBorder
+                                                    },
                                                     contentDescription = "Favourite",
-                                                    tint = Color.White
+                                                    tint = if(favSongList.any { it.id == currentSong?.id }){ MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) }else{ Color.White}
                                                 )
                                             }
                                         }
@@ -617,7 +660,9 @@ fun PlayingScreen(
                             ) {
                                 Text("128kbps", color = Color.White)
                             }
-                            IconButton(onClick = { /* Next */ }) {
+                            IconButton(onClick = {
+                                currentSong?.let { musicVM.songDownloading(it) }
+                            }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_arrow_circle_down_24),
                                     contentDescription = "Next",

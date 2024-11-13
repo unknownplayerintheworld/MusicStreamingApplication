@@ -1,22 +1,34 @@
 package com.hung.musicstreamingapplication.data.repository
 
+import android.content.ContentResolver
+import android.content.ContentValues
 import android.content.SharedPreferences
+import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.storage.FirebaseStorage
+import com.hung.musicstreamingapplication.data.local.dao.SongDao
 import com.hung.musicstreamingapplication.data.model.Album
 import com.hung.musicstreamingapplication.data.model.Author
 import com.hung.musicstreamingapplication.data.model.Playlist
 import com.hung.musicstreamingapplication.data.model.Song
 import com.hung.musicstreamingapplication.domain.repository.SongRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.tasks.await
+import java.io.File
 import java.util.Locale
 import javax.inject.Inject
 
 class SongRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
+    private val songDao: SongDao,
+    private val storage: FirebaseStorage,
+    private val contentResolver: ContentResolver,
     private val sharePref: SharedPreferences
 ) : SongRepository {
     override suspend fun getRandomSong(): List<Song> {
@@ -113,65 +125,69 @@ class SongRepositoryImpl @Inject constructor(
             emptyList()
         }
     }
-    override suspend fun recommendBestPlaylist(userID: String): Playlist? {
+    override suspend fun recommendBestPlaylists(userID: String): List<Playlist> {
         return try {
-            Log.d("RecommendBestPlaylist", "Starting recommendation for user: $userID")
+            Log.d("RecommendBestPlaylists", "Starting recommendation for user: $userID")
 
-            // Lấy lịch sử nghe của người dùng và thống kê thể loại phổ biến nhất
+            // Fetch user's listening history and determine the most popular genre
             val historySnapshot = firestore.collection("history")
                 .whereEqualTo("userID", userID)
-                .whereEqualTo("type","song")
+                .whereEqualTo("type", "song")
                 .orderBy("created_at", Query.Direction.DESCENDING)
-                .limit(50) // Lấy 50 bài gần nhất trong lịch sử nghe
+                .limit(50) // Get the 50 most recent songs in history
                 .get()
                 .await()
 
-            Log.d("RecommendBestPlaylist", "History snapshot size: ${historySnapshot.size()}")
+            Log.d("RecommendBestPlaylists", "History snapshot size: ${historySnapshot.size()}")
+
+            // If history is empty, return 4 random playlists
+            if (historySnapshot.isEmpty) {
+                Log.d("RecommendBestPlaylists", "No history found, returning random playlists.")
+
+                // Fetch all playlists
+                val allPlaylistsSnapshot = firestore.collection("playlist").get().await()
+                val allPlaylists = allPlaylistsSnapshot.documents.mapNotNull { document ->
+                    document.toObject(Playlist::class.java)?.copy(id = document.id)
+                }
+
+                // Shuffle the playlists to randomize the selection
+                return allPlaylists.shuffled().take(4)
+            }
 
             val genreCount = mutableMapOf<String, Int>()
 
-            // Đếm số lần xuất hiện của từng thể loại trong lịch sử nghe
+            // Count occurrences of each genre in the listening history
             for (historyDoc in historySnapshot.documents) {
                 val songID = historyDoc.getString("itemID")
-                Log.d("RecommendBestPlaylist", "Processing history doc: ${historyDoc.id}, songID: $songID")
+                Log.d("RecommendBestPlaylists", "Processing history doc: ${historyDoc.id}, songID: $songID")
 
                 if (!songID.isNullOrEmpty()) {
                     val songSnapshot = firestore.collection("song").document(songID).get().await()
                     val song = songSnapshot.toObject(Song::class.java)
 
-                    Log.d("RecommendBestPlaylist", "Retrieved song for ID $songID: $song")
+                    Log.d("RecommendBestPlaylists", "Retrieved song for ID $songID: $song")
 
                     song?.genreIDs?.forEach { genre ->
                         genreCount[genre] = genreCount.getOrDefault(genre, 0) + 1
-                        Log.d("RecommendBestPlaylist", "Incremented genre count for $genre: ${genreCount[genre]}")
                     }
                 }
             }
 
-            Log.d("RecommendBestPlaylist", "Final genre count: $genreCount")
+            Log.d("RecommendBestPlaylists", "Final genre count: $genreCount")
 
-            // Xác định thể loại phổ biến nhất
-            val popularGenre = genreCount.maxByOrNull { it.value }?.key ?: return null
-            Log.d("RecommendBestPlaylist", "Most popular genre: $popularGenre")
+            // Determine the most popular genre
+            val popularGenre = genreCount.maxByOrNull { it.value }?.key ?: return emptyList()
 
-            // Lấy tất cả các playlist
+            // Fetch all playlists
             val playlistSnapshot = firestore.collection("playlist").get().await()
-            Log.d("RecommendBestPlaylist", "Total playlists retrieved: ${playlistSnapshot.size()}")
+            val playlistScores = mutableListOf<Pair<Playlist, Double>>()
 
-            var bestPlaylist: Playlist? = null
-            var highestAveragePlayCount = 0.0
-
-            // Duyệt qua tất cả các playlist
+            // Iterate through all playlists and check for songs that match the popular genre
             for (document in playlistSnapshot.documents) {
-                Log.d("RecommendBestPlaylist", "Document ID: ${document.id}")
-                val playlist = document.toObject(Playlist::class.java)?.copy(id = document.id) // Copy and set the id manually
-                Log.d("RecommendBestPlaylist", "Playlist ID: ${document.id}, Playlist data: $playlist")
+                val playlist = document.toObject(Playlist::class.java)?.copy(id = document.id)
 
-                // Kiểm tra nếu playlist chứa bài hát
+                // Check if the playlist contains songs
                 if (playlist != null && playlist.songIDs.isNotEmpty()) {
-                    Log.d("RecommendBestPlaylist", "Playlist has ${playlist.songIDs.size} songs")
-
-                    // Lấy danh sách bài hát trong playlist
                     val songSnapshot = firestore.collection("song")
                         .whereIn(FieldPath.documentId(), playlist.songIDs)
                         .get()
@@ -180,45 +196,52 @@ class SongRepositoryImpl @Inject constructor(
                     val genreSongs = mutableListOf<Song>()
                     var totalPlayCount = 0
 
-                    // Lọc bài hát có genreIDs chứa thể loại phổ biến nhất và tính tổng playCount
+                    // Filter songs that have the popular genre
                     for (songDoc in songSnapshot.documents) {
                         val song = songDoc.toObject(Song::class.java)
-                        Log.d("RecommendBestPlaylist", "Song in playlist: ${song?.name}, Genre: ${song?.genreIDs}")
 
-                        // Kiểm tra nếu bài hát có chứa thể loại phổ biến nhất trong danh sách genreIDs
+                        // Check if the song contains the popular genre
                         if (song != null && song.genreIDs.contains(popularGenre)) {
                             genreSongs.add(song)
                             totalPlayCount += song.playcount
-                            Log.d("RecommendBestPlaylist", "Added song: ${song.name}, Total play count: $totalPlayCount")
                         }
                     }
 
-                    // In ra các giá trị để kiểm tra
-                    Log.d("RecommendBestPlaylist", "Playlist ID: ${playlist.id}, Genre Songs Count: ${genreSongs.size}")
-
-                    // Kiểm tra nếu playlist có ít nhất 7 bài thuộc thể loại phổ biến
-                    if (genreSongs.size >= 1) {
+                    // Only add playlist if it has at least 1 song in the popular genre
+                    if (genreSongs.isNotEmpty()) {
                         val averagePlayCount = totalPlayCount.toDouble() / genreSongs.size
-                        Log.d("RecommendBestPlaylist", "Average play count for playlist: $averagePlayCount")
-
-                        // Nếu lượt nghe trung bình lớn hơn hiện tại, chọn playlist này
-                        if (averagePlayCount > highestAveragePlayCount) {
-                            highestAveragePlayCount = averagePlayCount
-                            bestPlaylist = playlist
-                            Log.d("RecommendBestPlaylist", "Updated best playlist: ${playlist.id}, Highest average play count: $highestAveragePlayCount")
-                        }
+                        playlistScores.add(Pair(playlist, averagePlayCount))
                     }
                 }
             }
 
-            Log.d("RecommendBestPlaylist", "Best playlist selected: ${bestPlaylist?.id}, Highest average play count: $highestAveragePlayCount")
-            bestPlaylist // Trả về playlist có lượt nghe trung bình cao nhất
+            // If no playlists match the popular genre, return random playlists
+            if (playlistScores.isEmpty()) {
+                Log.d("RecommendBestPlaylists", "No matching playlists, returning random playlists.")
+
+                // Fetch all playlists and shuffle to select random ones
+                val allPlaylistsSnapshot = firestore.collection("playlist").get().await()
+                val allPlaylists = allPlaylistsSnapshot.documents.mapNotNull { document ->
+                    document.toObject(Playlist::class.java)?.copy(id = document.id)
+                }
+
+                // Shuffle and return 4 random playlists
+                return allPlaylists.shuffled().take(4)
+            }
+
+            // Sort playlists by average play count and return the top 4
+            return playlistScores
+                .sortedByDescending { it.second }
+                .take(4)
+                .map { it.first }
 
         } catch (e: Exception) {
-            Log.e("RecommendBestPlaylist", "Error recommending playlist: ", e)
-            null
+            Log.e("RecommendBestPlaylists", "Error recommending playlists: ", e)
+            emptyList()
         }
     }
+
+
 
     override suspend fun getHotAlbum(): List<Album> {
         val albumCollection = firestore.collection("album")  // Collection for albums
@@ -1224,6 +1247,211 @@ class SongRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e("UPSERT_HISTORY", "Error adding/updating song in history: ${e.message}")
             false // Trả về false nếu có lỗi xảy ra
+        }
+    }
+
+    override suspend fun downloadSong(songID: String): Boolean {
+        return try {
+            // Step 1: Get song info from Firestore
+            val document = firestore.collection("song").document(songID).get().await()
+            if (!document.exists()) return false
+
+            val name = document.getString("name") ?: return false
+            val authorIds = document.get("authorIDs") as? List<String> ?: return false // Lấy danh sách authorIds
+            val downloadUrl = document.getString("link") ?: return false
+
+            // Step 2: Create a local temporary file where the song will be downloaded
+            val localFile = File.createTempFile("downloaded_song_$songID", ".mp3")
+
+            // Step 3: Get a reference to the file from the download URL
+            val storageRef = storage.getReferenceFromUrl(downloadUrl)
+
+            // Step 4: Download the file and await the result
+            storageRef.getFile(localFile).await()
+
+            // Step 5: Fetch author names from Firestore using authorIDs
+            val authorNames = mutableListOf<String>()
+            for (authorId in authorIds) {
+                val authorDoc = firestore.collection("author").document(authorId).get().await()
+                val authorName = authorDoc.getString("name") // Assume "name" field stores author name
+                if (authorName != null) {
+                    authorNames.add(authorName)
+                }
+            }
+            // Convert the list of author names to a string (you can format it however you like)
+            val authorNamesString = authorNames.joinToString(", ")
+
+            // Step 6: Save the song file to MediaStore
+            val savedUri = saveToMediaStore(localFile, name)
+                ?: return false // Failed to save to MediaStore
+
+            // Step 7: Save the song info to Room with the same id from Firestore
+            val song = Song(
+                id = songID,
+                name = name,
+                authorIDs = authorIds,
+                authorName = authorNamesString, // Store author names in the Song entity
+                link = savedUri.toString()
+            )
+            songDao.insert(song)
+
+            true // Successfully downloaded and saved the song
+        } catch (e: Exception) {
+            // Handle any exceptions here (e.g., log errors)
+            false
+        }
+    }
+
+
+    override suspend fun saveToMediaStore(file: File, title: String): Uri? {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Audio.Media.DISPLAY_NAME, "$title.mp3")
+            put(MediaStore.Audio.Media.MIME_TYPE, "audio/mpeg")
+            put(MediaStore.Audio.Media.RELATIVE_PATH, Environment.DIRECTORY_MUSIC) // Đường dẫn trong MediaStore
+            put(MediaStore.Audio.Media.IS_PENDING, 1) // Cờ đánh dấu file đang được xử lý
+        }
+        val audioCollection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+
+        // Step 1: Insert into MediaStore
+        val uri = contentResolver.insert(audioCollection, contentValues) ?: return null
+
+        try {
+            // Step 2: Mở output stream để ghi file vào MediaStore
+            contentResolver.openOutputStream(uri)?.use { outputStream ->
+                file.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            // Step 3: Xác nhận file đã hoàn tất
+            contentValues.clear()
+            contentValues.put(MediaStore.Audio.Media.IS_PENDING, 0) // Bỏ cờ "pending"
+            contentResolver.update(uri, contentValues, null, null)
+
+            return uri // Trả về URI của file trong MediaStore
+        } catch (e: Exception) {
+            // Nếu có lỗi xảy ra thì xóa file khỏi MediaStore
+            contentResolver.delete(uri, null, null)
+            return null
+        }
+    }
+
+    override suspend fun getAllDownloadSongs(isAsc : Boolean): List<Song> {
+        val songs = songDao.getAllDownloadedSong()
+        return if(isAsc){
+            songs.sortedBy {
+                it.name.lowercase()
+            }
+        }else{
+            songs.sortedByDescending {
+                it.name.lowercase()
+            }
+        }
+    }
+
+    override suspend fun searchSongByName(name: String): List<Song>? {
+        return songDao.getSongByName(name)
+    }
+
+    override suspend fun getFavouriteSongs(userID: String): List<Song> {
+        return try {
+            val snapshot = firestore.collection("favourite")
+                .whereEqualTo("userID", userID)
+                .whereEqualTo("type","song")
+                .get()
+                .await()
+            snapshot.documents.forEach { doc ->
+                Log.d("FV_SONG_REPO", "Document data: ${doc.data}") // In ra toàn bộ dữ liệu
+            }
+
+            if (snapshot.documents.isNotEmpty()) {
+                val songs = mutableListOf<Song>()
+
+                snapshot.documents.forEach { doc ->
+                    val itemID = doc.get("itemID")
+
+                    Log.d("FV_SONG_REPO", "itemID: $itemID")
+                        val songsnap = firestore.collection("song")
+                            .whereEqualTo(FieldPath.documentId(), itemID)
+                            .get()
+                            .await()
+
+                        Log.d("FV_SONG_REPO", "song snapshot size: ${songsnap.documents.size}")
+
+                        songsnap.documents.forEach { songdoc ->
+                            val song = songdoc.toObject(Song::class.java)
+                            song?.let {
+                                it.id = songdoc.id
+                                val authorIDs = it.authorIDs ?: emptyList<String>()
+                                val authorNames = mutableListOf<String>()
+
+                                Log.d("FV_SONG_REPO", "authorIDs: $authorIDs")
+
+                                // Lặp qua từng authorID và truy vấn tên
+                                for (authorID in authorIDs) {
+                                    val authorSnap = firestore.collection("author")
+                                        .document(authorID)
+                                        .get()
+                                        .await()
+
+                                    val authorName = authorSnap.getString("name")
+                                    Log.d("FV_SONG_REPO", "author name: $authorName")
+
+                                    authorName?.let {
+                                        authorNames.add(it)
+                                    }
+                                }
+
+                                it.authorName = authorNames.joinToString(",")
+                                songs.add(it)
+                            }
+                        }
+
+                }
+                songs
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.d("FV_SONG_REPO", "Error: ${e.message}")
+            emptyList() // Trả về danh sách rỗng nếu có lỗi
+        }
+    }
+
+
+
+    override suspend fun addSongToFavourite(userID: String, songID: String): Boolean {
+        try {
+            val favData = hashMapOf(
+                "userID" to userID,
+                "itemID" to songID,
+                "type" to "song",
+                "created_at" to Timestamp.now()
+            )
+            firestore.collection("favourite").add(favData).await()
+            return true
+        }catch (e: Exception){
+            Log.d("SONG_FAV_REPO",e.message.toString())
+            return false
+        }
+    }
+
+    override suspend fun delSongFromFavourite(userID: String, songID: String): Boolean {
+        return try{
+            val snapShot = firestore.collection("favourite")
+                .whereEqualTo("userID",userID)
+                .whereEqualTo("itemID",songID)
+                .get()
+                .await()
+            for (doc in snapShot.documents)
+            {
+                firestore.collection("favourite").document(doc.id).delete().await()
+            }
+            Log.d("DEL_FAV_SONG_REPO","Xóa thành công")
+            true
+        }catch (e: Exception){
+            Log.d("DEL_FAV_SONG_REPO",e.message.toString())
+            false
         }
     }
 }

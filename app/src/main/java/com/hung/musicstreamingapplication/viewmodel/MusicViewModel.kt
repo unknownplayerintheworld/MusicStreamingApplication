@@ -60,6 +60,8 @@ class MusicViewModel @Inject constructor(
     val searchAuthor = _searchAuthor.asStateFlow()
     private val _searchAlbum = MutableStateFlow<List<Album>>(emptyList())
     val searchAlbum = _searchAlbum.asStateFlow()
+    private val _downloadedSongs = MutableStateFlow<List<Song>>(emptyList())
+    val downloadedSong = _downloadedSongs.asStateFlow()
 
     // song from album
     private val _songFromPlaylist = MutableStateFlow<List<Song>>(emptyList())
@@ -82,6 +84,10 @@ class MusicViewModel @Inject constructor(
     val isAddingSuccessful = _isAddingSuccessful.asStateFlow()
     private val _isRemoveSongFromPlaylist = MutableStateFlow(-1)
     val isRemoveSongFromPlaylist = _isRemoveSongFromPlaylist.asStateFlow()
+    private val _isDownloadSuccessful = MutableStateFlow(-1)
+    val isDownloadSuccessful = _isDownloadSuccessful.asStateFlow()
+    private val _isAsc = MutableStateFlow(true)
+    val isAsc = _isAsc.asStateFlow()
 
 
 
@@ -98,6 +104,16 @@ class MusicViewModel @Inject constructor(
     private val _favPlaylists = MutableStateFlow<List<Playlist>?>(emptyList())
     val favAlbum = _favAlbums.asStateFlow()
     val favPlaylist = _favPlaylists.asStateFlow()
+    private val _searchDSongs = MutableStateFlow<List<Song>>(emptyList())
+    val searchDSongs = _searchDSongs.asStateFlow()
+    private val _favSongList = MutableStateFlow<List<Song>>(emptyList())
+    val favSongList = _favSongList.asStateFlow()
+    private val _delFavSong = MutableStateFlow(-1)
+    val delFavSong = _delFavSong.asStateFlow()
+    private val _addFavSong = MutableStateFlow(-1)
+    val addFavSong = _addFavSong.asStateFlow()
+    private val _authorFavList = MutableStateFlow<List<Author>>(emptyList())
+    val authorFavList = _authorFavList.asStateFlow()
 
     // song from author
     private val _hotAuthorSong = MutableStateFlow<List<Song>>(emptyList())
@@ -654,9 +670,6 @@ class MusicViewModel @Inject constructor(
             }
         }
     }
-    fun getChildComment(commentID: String){
-
-    }
     fun writeComment(
         userID: String,
         content: String,
@@ -700,6 +713,99 @@ class MusicViewModel @Inject constructor(
         }else{
             _isReplying.update {
                 Comment()
+            }
+        }
+    }
+    fun songDownloading(song: Song){
+        viewModelScope.launch {
+            songRepository.downloadSong(song.id).let {
+                it ->
+                if(it){
+                    _isDownloadSuccessful.update {
+                        1
+                    }
+                }else{
+                    _isDownloadSuccessful.update {
+                        0
+                    }
+                }
+            }
+        }
+    }
+    fun resetDownloadingState(){
+        _isDownloadSuccessful.update {
+            -1
+        }
+    }
+    fun fetchDownloadedSongs(){
+        viewModelScope.launch {
+            songRepository.getAllDownloadSongs(_isAsc.value).let {
+                list ->
+                _downloadedSongs.update {
+                    list
+                }
+            }
+        }
+    }
+    fun setAscendingOrDescending(){
+        _isAsc.update {
+            !_isAsc.value
+        }
+    }
+    fun getSongByNames(name: String){
+        viewModelScope.launch {
+            songRepository.searchSongByName(name).let{
+                d -> _searchDSongs.update {
+                    d!!
+                }
+            }
+        }
+    }
+    fun getFavSongList(userID: String){
+        viewModelScope.launch {
+            songRepository.getFavouriteSongs(userID).let {
+                favs ->
+                _favSongList.update {
+                    favs!!
+                }
+            }
+        }
+    }
+    fun addSongToFav(userID: String,song: Song){
+        viewModelScope.launch {
+            songRepository.addSongToFavourite(userID,song.id).let {
+                it1 ->
+                _addFavSong.update {
+                    if(it1){
+                        1
+                    }else{
+                        0
+                    }
+                }
+            }
+        }
+    }
+    fun delSongFromFav(userID: String,song: Song){
+        viewModelScope.launch {
+            songRepository.delSongFromFavourite(userID,song.id).let {
+                    it1 ->
+                _delFavSong.update {
+                    if(it1){
+                        1
+                    }else{
+                        0
+                    }
+                }
+            }
+        }
+    }
+    fun getAuthorFavourite(userID: String){
+        viewModelScope.launch {
+            authorRepository.getAuthorFav(userID).let {
+                authors ->
+                _authorFavList.update {
+                    authors!!
+                }
             }
         }
     }

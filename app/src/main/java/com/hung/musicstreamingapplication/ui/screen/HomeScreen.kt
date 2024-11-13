@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -56,6 +57,9 @@ import com.hung.musicstreamingapplication.R
 import com.hung.musicstreamingapplication.data.model.Album
 import com.hung.musicstreamingapplication.data.model.Playlist
 import com.hung.musicstreamingapplication.data.model.Song
+import com.hung.musicstreamingapplication.ui.animation.JourneyItemText
+import com.hung.musicstreamingapplication.ui.components.itemRowMusic
+import com.hung.musicstreamingapplication.viewmodel.LoginViewModel
 import com.hung.musicstreamingapplication.viewmodel.MusicViewModel
 import kotlinx.coroutines.delay
 
@@ -76,7 +80,7 @@ import kotlinx.coroutines.delay
         while (true) {
             // Kiểm tra nếu đã cuộn đến cuối danh sách
             if (listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1) {
-                listState.scrollToItem(0) // Cuộn về đầu
+                listState.animateScrollToItem(0) // Cuộn về đầu
             } else {
                 listState.animateScrollToItem(listState.firstVisibleItemIndex + 1)
             }
@@ -126,7 +130,7 @@ import kotlinx.coroutines.delay
                     items(listsong.size) {
                         Card(
                             modifier = Modifier
-                                .width(screenWidth)
+                                .width(screenWidth/2)
                                 .height(200.dp)
                                 .padding(0.dp, 0.dp, 10.dp, 0.dp)
                                 .clickable {
@@ -162,6 +166,11 @@ import kotlinx.coroutines.delay
                                         )
                                 )
                                 Box(
+                                    Modifier.fillMaxSize().background(
+                                        Color.Black.copy(alpha = 0.15f)
+                                    )
+                                )
+                                Box(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .padding(10.dp), contentAlignment = Alignment.BottomStart
@@ -182,6 +191,19 @@ import kotlinx.coroutines.delay
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
+                                Box(
+                                    modifier = Modifier.fillMaxSize()
+                                        .padding(10.dp), contentAlignment = Alignment.TopStart
+                                ){
+                                    Column(
+                                        Modifier
+                                            .clip(RoundedCornerShape(15.dp))
+                                            .background(Color.Gray.copy(alpha = 0.3f))
+                                            .padding(5.dp)
+                                    ) {
+                                        JourneyItemText()
+                                    }
+                                }
                             }
                         }
                     }
@@ -195,7 +217,8 @@ import kotlinx.coroutines.delay
 fun RecentTrack(
     list: List<Song>?,
     navController: NavHostController,
-    musicVM: MusicViewModel
+    musicVM: MusicViewModel,
+    loginVM:LoginViewModel
 ) {
     var listsong by remember {
         mutableStateOf(emptyList<Song>())
@@ -213,6 +236,9 @@ fun RecentTrack(
         Row(
             Modifier
                 .fillMaxWidth()
+                .clickable {
+                    navController.navigate("recentlyDetail")
+                }
                 .padding(0.dp, 0.dp, 0.dp, 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -253,63 +279,66 @@ fun RecentTrack(
                         Modifier.fillParentMaxSize()
                     ) {
                         songGroup.forEach { song ->
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .clickable {
-                                        musicVM.startMusicService(song)
-                                        navController.navigate("playing")
-                                    }
-                                    .height(60.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Card(
-                                    modifier = Modifier
-                                        .width(60.dp)
-                                        .height(60.dp)
-                                        .padding(0.dp, 0.dp, 10.dp, 15.dp),
-                                    shape = RoundedCornerShape(10.dp),
-                                    elevation = CardDefaults.cardElevation(
-                                        defaultElevation = 5.dp
-                                    )
-                                ) {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
-                                            LocalContext.current).data(song.imageUrl).crossfade(true).build()),
-                                        contentDescription = "recently",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                }
-
-                                Row(
-                                    Modifier
-                                        .fillMaxSize()
-                                        .padding(0.dp, 0.dp, 10.dp, 15.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = song.name,
-                                            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 3.dp),
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Text(
-                                            text = song.authorName ?: "Unknown",
-                                            fontWeight = FontWeight.Light,
-                                            fontSize = 13.sp
-                                        )
-                                    }
-                                    IconButton(onClick = { /*TODO*/ }) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.more_vert_24),
-                                            contentDescription = "More options"
-                                        )
-                                    }
-                                }
-                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            itemRowMusic(musicVM, navController, loginVM,song)
+                            Spacer(modifier = Modifier.height(2.dp))
+//                            Row(
+//                                Modifier
+//                                    .fillMaxWidth()
+//                                    .clip(RoundedCornerShape(10.dp))
+//                                    .clickable {
+//                                        musicVM.startMusicService(song)
+//                                        navController.navigate("playing")
+//                                    }
+//                                    .height(60.dp),
+//                                verticalAlignment = Alignment.CenterVertically
+//                            ) {
+//                                Card(
+//                                    modifier = Modifier
+//                                        .width(60.dp)
+//                                        .height(60.dp)
+//                                        .padding(0.dp, 0.dp, 10.dp, 15.dp),
+//                                    shape = RoundedCornerShape(10.dp),
+//                                    elevation = CardDefaults.cardElevation(
+//                                        defaultElevation = 5.dp
+//                                    )
+//                                ) {
+//                                    Image(
+//                                        painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
+//                                            LocalContext.current).data(song.imageUrl).crossfade(true).build()),
+//                                        contentDescription = "recently",
+//                                        contentScale = ContentScale.Crop,
+//                                        modifier = Modifier.fillMaxSize()
+//                                    )
+//                                }
+//
+//                                Row(
+//                                    Modifier
+//                                        .fillMaxSize()
+//                                        .padding(0.dp, 0.dp, 10.dp, 15.dp),
+//                                    verticalAlignment = Alignment.CenterVertically,
+//                                    horizontalArrangement = Arrangement.SpaceBetween
+//                                ) {
+//                                    Column {
+//                                        Text(
+//                                            text = song.name,
+//                                            modifier = Modifier.padding(0.dp, 0.dp, 0.dp, 3.dp),
+//                                            fontWeight = FontWeight.Bold
+//                                        )
+//                                        Text(
+//                                            text = song.authorName ?: "Unknown",
+//                                            fontWeight = FontWeight.Light,
+//                                            fontSize = 13.sp
+//                                        )
+//                                    }
+//                                    IconButton(onClick = { /*TODO*/ }) {
+//                                        Icon(
+//                                            painter = painterResource(id = R.drawable.more_vert_24),
+//                                            contentDescription = "More options"
+//                                        )
+//                                    }
+//                                }
+//                            }
                         }
                     }
                 }
@@ -321,7 +350,7 @@ fun RecentTrack(
 
 @Composable
 fun Recommend(
-    playlist: Playlist,
+    playlist: List<Playlist>,
     navController: NavHostController,
     musicVM:MusicViewModel
     ) {
@@ -347,14 +376,18 @@ fun Recommend(
                 .fillMaxSize()
                 .padding(10.dp)
         ) {
-            items(4) {
+            items(playlist.size) {
                 Card(
                     modifier = Modifier
                         .width((screenWidth / 3) + screenWidth / 8)
                         .height(200.dp)
                         .clickable {
-                            navController.navigate("playlist")
-                            musicVM.playlistClicked(playlist)
+                            if(playlist[it].name.isNullOrEmpty()){
+
+                            } else {
+                                navController.navigate("playlist")
+                                musicVM.playlistClicked(playlist[it])
+                            }
                         }
                         .padding(0.dp, 0.dp, 10.dp, 0.dp),
                     shape = RoundedCornerShape(10.dp),
@@ -367,7 +400,13 @@ fun Recommend(
                     ) {
                         Image(
                             painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
-                                LocalContext.current).data(playlist.imageUrl).crossfade(true).build()),
+                                LocalContext.current).data(
+                                    if(!playlist[it].imageUrl.isNullOrEmpty()){
+                                        playlist[it].imageUrl
+                                    }else{
+                                        R.drawable.d3650077420d928b587a1feb77fa94cb
+                                    }
+                                ).crossfade(true).build()),
                             contentDescription = "journey",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -390,7 +429,7 @@ fun Recommend(
                                 .fillMaxSize()
                                 .padding(10.dp), contentAlignment = Alignment.BottomStart
                         ) {
-                            playlist.name?.let { it1 ->
+                            playlist[it].name?.let { it1 ->
                                 Text(
                                     it1,
                                     style = TextStyle(color = Color.White, fontSize = 16.sp)

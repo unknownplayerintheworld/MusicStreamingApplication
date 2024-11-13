@@ -8,4 +8,5 @@ interface AuthorRepository {
     suspend fun getAlbumsAuthor(authorID: String): List<Album>?
     suspend fun getPlaylistsAuthor(authorID: String): List<Playlist>?
     suspend fun getTopRelatedAuthors(artistId: String): List<Author>?
+    suspend fun getAuthorFav(userID: String): List<Author>?
 }

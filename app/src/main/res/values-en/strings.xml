@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <resources>
+        <string name="app_name">MusicStreamingApplication</string>
+        <string name="default_web_client_id">117706082981-f4qgdue4mnq7egk6d85op3f7335pn8bf.apps.googleusercontent.com</string>
+
+        <!-- label -->
+        <string name="journey">Journey</string>
+        <string name="recently">Recently</string>
+        <string name="recommend">Recommend</string>
+        <string name="hotAlbum">Hot Album</string>
+        <string name="trending">Trending</string>
+        <string name="library">Library</string>
+
+        <!-- demo -->
+        <string name="music_name_demo">Music 1</string>
+        <string name="author_name_demo">Author 1</string>
+        <string name="music_newest">New Song</string>
+
+        <!-- email report -->
+        <string name="verify_email">Verify email has been sent!</string>
+
+        <!-- search -->
+        <string name="recommend_for_you">Recommend for you</string>
+        <string name="search_results">Search result</string>
+        <string name="download_music_playlist">Download</string>
+        <string name="favourite">Favourite</string>
+        <string name="no_result_searching">No result!</string>
+
+        <!-- playlist -->
+        <string name="search_playlist">Searching</string>
+        <string name="add_to_player">Add to player</string>
+        <string name="remove_from_playlist">Remove from player</string>
+        <string name="add_to_fav">Add to favourite</string>
+        <string name="remove_from_fav">Remove from Favourite</string>
+        <string name="share">Shared</string>
+        <string name="error_adding_playlist_empty">Cannot be empty!</string>
+        <string name="successful_adding_playlist">Playlist added successfully!</string>
+        <string name="remove_song_playlist_toast">Song removed from playlist successfully!</string>
+        <string name="remove_song_playlist_error">Failed to remove song from playlist!</string>
+        <string name="add_song_to_playlist">Add</string>
+        <string name="download_successful">Download successful!</string>
+        <string name="download_failure">Download failed!</string>
+
+        <!-- library -->
+        <string name="recently_play">Recently Played</string>
+        <string name="add_Playlist">Create new Playlist</string>
+        <string name="no_element">No elements available</string>
+        <string name="add_text">Add a new list?</string>
+        <string name="downloaded">Downloaded</string>
+        <string name="song">Song</string>
+        <string name="random_playing_lib">Shuffle play</string>
+        <string name="filter">Filter</string>
+        <string name="newest">Newest</string>
+        <string name="add_to_fav_success">Added song to favourites successfully!</string>
+        <string name="add_to_fav_failure">Failed to add song to favourites!</string>
+        <string name="del_from_fav_success">Removed song from favourites successfully!</string>
+        <string name="del_from_fav_failure">Failed to remove song from favourites!</string>
+
+        <!-- profile -->
+        <string name="personal">Personal</string>
+        <string name="upgrade">Upgrade account</string>
+        <string name="price_options_1">$0.61</string>
+        <string name="product_price_option_1">Listen to high-quality music, no ads, unlimited playlists</string>
+        <string name="cancel_ads_text">Remove ads</string>
+        <string name="download_music_text">Unlimited music storage</string>
+        <string name="playlist_unlimited_text">Create unlimited playlists</string>
+        <string name="setting">Settings</string>
+        <string name="player">Music player</string>
+        <string name="version_number">1.0.0</string>
+        <string name="MUSA_plus_description">Unlimited music,playlist,no ads</string>
+
+        <string name="author">Artist</string>
+        <string name="upload">Upload</string>
+        <string name="play">Play Music</string>
+        <string name="follow">Follow</string>
+        <string name="hot_song">Hot Song</string>
+        <string name="more">See more</string>
+        <string name="no_songs_available">No listening history available!</string>
+        <string name="interface_ui">Interface</string>
+        <string name="version">Version</string>
+        <string name="support_and_report">Support and report issues</string>
+        <string name="logout">Log out</string>
+        <string name="remove_acc">Delete account</string>
+        <string name="download_text">Download</string>
+        <string name="notification">Notification</string>
+
+        <!-- playing -->
+        <string name="no_lyrics">No lyrics available for this song!</string>
+        <string name="reply">Reply</string>
+        <string name="reply_to">Reply to</string>
+        <string name="comment">Comment</string>
+        <string name="write_a_comment">Write a comment</string>
+        <string name="successful_comment">Comment posted successfully!</string>
+        <string name="failure_comment">Failed to post comment!</string>
+        <string name="comment_of">Comment from</string>
+        <string name="del_comment">Delete comment</string>
+
+    </resources>

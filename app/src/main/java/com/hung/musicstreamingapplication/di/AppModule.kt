@@ -1,5 +1,6 @@
 package com.hung.musicstreamingapplication.di
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.media3.exoplayer.ExoPlayer
@@ -105,5 +106,13 @@ object AppModule {
     @Singleton
     fun provideExoPlayer(@ApplicationContext context: Context): ExoPlayer{
         return ExoPlayer.Builder(context).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideContentResolver(
+        @ApplicationContext context: Context
+    ): ContentResolver{
+        return context.contentResolver
     }
 }

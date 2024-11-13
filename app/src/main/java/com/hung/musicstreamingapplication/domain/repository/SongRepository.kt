@@ -1,14 +1,16 @@
 package com.hung.musicstreamingapplication.domain.repository
 
+import android.net.Uri
 import com.hung.musicstreamingapplication.data.model.Album
 import com.hung.musicstreamingapplication.data.model.Author
 import com.hung.musicstreamingapplication.data.model.Playlist
 import com.hung.musicstreamingapplication.data.model.Song
+import java.io.File
 
 interface SongRepository {
     suspend fun getRandomSong() : List<Song>
     suspend fun getRecentlySong(userID: String) : List<Song>
-    suspend fun recommendBestPlaylist(userID: String): Playlist?
+    suspend fun recommendBestPlaylists(userID: String): List<Playlist>
     suspend fun getHotAlbum(): List<Album>
     suspend fun getTrending(): List<Song>
     suspend fun getRelatedSong(userID: String): List<Song>
@@ -32,4 +34,11 @@ interface SongRepository {
     suspend fun savePlayCount(userID: String,songID : String) : Boolean
     suspend fun getLastPlayedTime(userID: String,songID: String): Long
     suspend fun upsertHistory(userID: String,itemID: String,type: String):Boolean
+    suspend fun downloadSong(songID: String): Boolean
+    suspend fun saveToMediaStore(file: File,title: String): Uri?
+    suspend fun getAllDownloadSongs(isAsc : Boolean): List<Song>?
+    suspend fun searchSongByName(name: String): List<Song>?
+    suspend fun addSongToFavourite(userID: String,songID: String): Boolean
+    suspend fun delSongFromFavourite(userID: String,songID: String): Boolean
+    suspend fun getFavouriteSongs(userID: String): List<Song>?
 }

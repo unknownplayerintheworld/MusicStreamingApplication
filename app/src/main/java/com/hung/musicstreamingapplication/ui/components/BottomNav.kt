@@ -149,15 +149,16 @@ fun customScaffold(
     ) {
         Scaffold(
             bottomBar = {
+                val shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp, bottomStart = 0.dp, bottomEnd = 0.dp)
                 Column(
                     Modifier
                         .fillMaxWidth()
-                        .padding(
-                            horizontal = 16.dp,
-                            vertical = 8.dp
-                        ) // Adjust padding for "floating" effect
-                        .offset(y = (-12).dp) // Push it slightly up
-                        .clip(RoundedCornerShape(10.dp))
+//                        .padding(
+//                            horizontal = 16.dp,
+//                            vertical = 8.dp
+//                        ) // Adjust padding for "floating" effect
+//                        .offset(y = (-12).dp) // Push it slightly up
+                        .clip(shape)
                 ) {
                     Box(
                         Modifier.fillMaxWidth()
@@ -273,10 +274,10 @@ fun customScaffold(
                     NavigationBar(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(64.dp) // Customize height
+                            .height(85.dp) // Customize height
                             .background(
                                 color = MaterialTheme.colorScheme.surfaceVariant, // Set background color
-                                shape = RoundedCornerShape(24.dp) // Rounded shape to make it look more circular
+                                shape = shape // Rounded shape to make it look more circular
                             )
                             .padding(bottom = 0.dp),
                     ) {
@@ -294,12 +295,15 @@ fun customScaffold(
                                         launchSingleTop = true
                                         restoreState = true
                                         navVM.setItemNavBar(item.title)
-                                        Log.d("NavBar2",item.title)
                                     }
 
                                 },
                                 label = {
-
+                                    Text(text = item.title, color = if(selectedItem.equals(item.title)){
+                                        Color(0xFF147354)
+                                    }else{
+                                        MaterialTheme.colorScheme.onBackground
+                                    })
                                 },
                                 icon = {
                                     BadgedBox(badge = {

@@ -153,23 +153,6 @@ fun CardAlbumItem(
             .fillMaxWidth()
             .height(200.dp)
     ) {
-//        Row(
-//            Modifier
-//                .fillMaxWidth()
-//                .padding(0.dp, 0.dp, 0.dp, 10.dp),
-//            verticalAlignment = Alignment.CenterVertically
-//        ) {
-//            Text(text = titleName, color = MaterialTheme.colorScheme.onBackground, fontSize = 30.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(10.dp,0.dp,0.dp,0.dp))
-//            IconButton(onClick = { /*TODO*/ }) {
-//                Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "arrow right")
-//            }
-//        }
-//        LazyRow(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(10.dp)
-//        ) {
-//            items(list.size) {
                 Card(
                     modifier = Modifier
                         .width(screenWidth / 2)
@@ -194,7 +177,7 @@ fun CardAlbumItem(
                     ) {
 //                        LoadImageFromNetwork(avatarLink = album.imageUrl)
                         Image(painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
-                            LocalContext.current).data(if(album.imageUrl.isNotEmpty()){album.imageUrl}else{playlist.imageUrl}).crossfade(true).build()),
+                            LocalContext.current).data(if(album.imageUrl.isNotEmpty()){album.imageUrl}else if(playlist.imageUrl.isNotEmpty()){playlist.imageUrl}else{R.drawable.d3650077420d928b587a1feb77fa94cb}).crossfade(true).build()),
                             contentDescription = "yae", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                         Box(
                             Modifier

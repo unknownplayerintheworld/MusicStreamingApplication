@@ -13,11 +13,14 @@ import com.hung.musicstreamingapplication.activity.HomeScreen
 import com.hung.musicstreamingapplication.data.model.Song
 import com.hung.musicstreamingapplication.ui.components.customScaffold
 import com.hung.musicstreamingapplication.ui.screen.AuthorScreen
+import com.hung.musicstreamingapplication.ui.screen.DownloadedScreen
+import com.hung.musicstreamingapplication.ui.screen.FavouriteScreen
 import com.hung.musicstreamingapplication.ui.screen.FixedNavbarWithTabs
 import com.hung.musicstreamingapplication.ui.screen.LibraryScreen
 import com.hung.musicstreamingapplication.ui.screen.PlayingScreen
 import com.hung.musicstreamingapplication.ui.screen.PlaylistScreen
 import com.hung.musicstreamingapplication.ui.screen.ProfileScreen
+import com.hung.musicstreamingapplication.ui.screen.SearchDownloadedSong
 import com.hung.musicstreamingapplication.ui.screen.SearchScreen
 import com.hung.musicstreamingapplication.ui.screen.addMusicToPlaylist
 import com.hung.musicstreamingapplication.viewmodel.HomeViewModel
@@ -56,13 +59,13 @@ fun MainNavHost(
                     ProfileScreen(musicVM = musicVM, navController = navController, loginVM = loginVM)
                 }
                 composable("search") {
-                    SearchScreen(musicVM = musicVM, navController = navController)
+                    SearchScreen(musicVM = musicVM, navController = navController, loginVM = loginVM)
                 }
                 composable("playlist") {
                     PlaylistScreen(playlist = playlist, navController = navController, musicVM = musicVM, loginVM = loginVM, album = album)
                 }
                 composable("author") {
-                    AuthorScreen(musicVM, navController, author)
+                    AuthorScreen(musicVM, navController, loginVM,author)
                 }
                 composable("recentlyDetail") {
                     FixedNavbarWithTabs(navController = navController, musicVM = musicVM, loginVM = loginVM)
@@ -75,6 +78,15 @@ fun MainNavHost(
                     PlayingScreen(Song(), musicVM = musicVM, navController = navController, loginVM = loginVM) {
                         checkPermission()
                     }
+                }
+                composable("downloaded"){
+                    DownloadedScreen(musicVM,loginVM,navController)
+                }
+                composable("dSearch"){
+                    SearchDownloadedSong(musicVM,loginVM,navController)
+                }
+                composable("favourite"){
+                    FavouriteScreen(musicVM, navController, loginVM)
                 }
             }
         }

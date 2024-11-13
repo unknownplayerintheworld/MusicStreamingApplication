@@ -5,6 +5,7 @@ import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.toObject
 import com.hung.musicstreamingapplication.data.model.Album
 import com.hung.musicstreamingapplication.data.model.Author
 import com.hung.musicstreamingapplication.data.model.Playlist
@@ -128,5 +129,40 @@ class AuthorRepositoryImpl @Inject constructor(
                     id = it.id
                 }
                 }
+    }
+
+    @OptIn(UnstableApi::class)
+    override suspend fun getAuthorFav(userID: String): List<Author>? {
+        return try{
+            val snapshot = firestore.collection("favourite")
+                .whereEqualTo("userID",userID)
+                .whereEqualTo("type","author")
+                .get().await()
+            if(!snapshot.isEmpty){
+                val authors = mutableListOf<Author>()
+                snapshot.documents.forEach {
+                    it ->
+                    val itemID = it.get("itemID")
+                    val authorsnap = firestore.collection("author")
+                        .whereEqualTo(FieldPath.documentId(),itemID)
+                        .get()
+                        .await()
+                    authorsnap.documents.forEach{
+                        authordoc ->
+                        val author = authordoc.toObject(Author::class.java)
+                        author?.let {
+                            authors.add(it)
+                        }
+                    }
+                }
+                authors
+            }
+            else{
+                emptyList()
+            }
+        }catch (e: Exception){
+            Log.d("AUTHOR_REPO",e.message.toString())
+            emptyList()
+        }
     }
 }

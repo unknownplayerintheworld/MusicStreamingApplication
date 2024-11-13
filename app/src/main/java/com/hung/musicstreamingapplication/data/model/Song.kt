@@ -2,9 +2,11 @@ package com.hung.musicstreamingapplication.data.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.firebase.Timestamp
 import com.google.gson.annotations.SerializedName
-
+@Entity(tableName = "song")
 data class Song(
     val authorIDs: List<String> = emptyList(),
     val createdAt: Timestamp = Timestamp.now(),
@@ -13,6 +15,7 @@ data class Song(
     val play_in_week: Int = 0,
     val play_in_month: Int = 0,
     val link: String = "",
+    @PrimaryKey
     var id: String = "",
     val name: String = "",
     val duration: Float = 0.0f,

@@ -17,6 +17,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -30,12 +31,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.core.content.PermissionChecker
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.hung.musicstreamingapplication.R
 import com.hung.musicstreamingapplication.navigation.MainNavHost
 import com.hung.musicstreamingapplication.ui.screen.HeaderHome
 import com.hung.musicstreamingapplication.ui.screen.HotAlbum
@@ -193,9 +197,10 @@ fun HomeScreen(
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(scrollState)
             .systemBarsPadding()
+            .padding(bottom = 70.dp)
     ) {
             HeaderHome(listsong,navController,musicVM)
-            RecentTrack(recentlySong, musicVM = musicVM, navController = navController)
+            RecentTrack(recentlySong, musicVM = musicVM, navController = navController, loginVM = loginVM)
             Recommend(playlist = recommendSong, navController = navController,musicVM)
             HotAlbum(hotalbum,navController, musicVM)
             Trending(trending, navController = navController, musicVM = musicVM)

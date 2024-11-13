@@ -7,8 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,15 +22,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -56,6 +65,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -66,6 +76,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -75,6 +86,7 @@ import com.google.accompanist.pager.rememberPagerState
 import com.hung.musicstreamingapplication.R
 import com.hung.musicstreamingapplication.data.model.Album
 import com.hung.musicstreamingapplication.data.model.Playlist
+import com.hung.musicstreamingapplication.ui.components.CustomButton
 import com.hung.musicstreamingapplication.ui.components.itemRowAlbum
 import com.hung.musicstreamingapplication.ui.components.itemRowAuthor
 import com.hung.musicstreamingapplication.ui.components.itemRowLibrary
@@ -157,16 +169,16 @@ fun LibraryScreen(
             ){
                 items(4){
                     when(it){
-                        0 -> itemRowLibrary(icon = Icons.Default.FavoriteBorder, contentDescription = "Favourite", color = Color.Cyan, textRes = "Favourite")
+                        0 -> itemRowLibrary(icon = Icons.Default.FavoriteBorder, contentDescription = "Favourite", color = Color.Cyan, textRes = "Favourite", index = 1, navController = navController)
                         1 -> itemRowLibrary(iconRes = painterResource(id = R.drawable.baseline_arrow_circle_down_24),color = Color.Magenta, contentDescription = "Download", textRes = stringResource(
                             id = R.string.download_music_playlist
-                        ))
+                        ), index = 2, navController = navController)
                         2 -> itemRowLibrary(iconRes = painterResource(id = R.drawable.baseline_cloud_upload_24), contentDescription = "Upload",textRes = stringResource(
                             id = R.string.upload
-                        ), color = Color.Yellow)
+                        ), color = Color.Yellow, index = 3, navController = navController)
                         3 -> itemRowLibrary(icon = Icons.Default.AccountCircle,contentDescription = "Artist", color = Color(0xFFFFA500), textRes = stringResource(
                             id = R.string.author
-                        ))
+                        ), index = 4, navController = navController)
                     }
                 }
             }
@@ -350,7 +362,7 @@ fun LibraryScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             TabRow(
                 selectedTabIndex = pagerState.currentPage,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(8.dp).width(200.dp)
             ) {
                 Tab(
                     selected = pagerState.currentPage == 0,
@@ -618,40 +630,40 @@ fun PlaylistSubScreen(
                     }
                 }
             }
-            else{
-                // Giao diện khi list null hoặc empty
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_add_circle_24), // Thay đổi thành icon trống phù hợp
-                                contentDescription = "No Albums",
-                                modifier = Modifier.size(48.dp), // Kích thước icon
-                                tint = MaterialTheme.colorScheme.onBackground.copy(0.8f) // Màu icon
-                            )
-                            Text(
-                                text = stringResource(id = R.string.no_element),
-                                fontSize = 20.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(0.8f),
-                                modifier = Modifier.padding(top = 8.dp) // Khoảng cách giữa icon và text
-                            )
-                            Text(
-                                text = stringResource(id = R.string.add_text),
-                                fontSize = 20.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(0.8f),
-                                modifier = Modifier.padding(top = 8.dp) // Khoảng cách giữa icon và text
-                            )
-                        }
-                    }
-                }
-            }
+//            else{
+//                // Giao diện khi list null hoặc empty
+//                item {
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxSize()
+//                            .padding(16.dp),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Column(
+//                            horizontalAlignment = Alignment.CenterHorizontally
+//                        ) {
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.baseline_add_circle_24), // Thay đổi thành icon trống phù hợp
+//                                contentDescription = "No Albums",
+//                                modifier = Modifier.size(48.dp), // Kích thước icon
+//                                tint = MaterialTheme.colorScheme.onBackground.copy(0.8f) // Màu icon
+//                            )
+//                            Text(
+//                                text = stringResource(id = R.string.no_element),
+//                                fontSize = 20.sp,
+//                                color = MaterialTheme.colorScheme.onBackground.copy(0.8f),
+//                                modifier = Modifier.padding(top = 8.dp) // Khoảng cách giữa icon và text
+//                            )
+//                            Text(
+//                                text = stringResource(id = R.string.add_text),
+//                                fontSize = 20.sp,
+//                                color = MaterialTheme.colorScheme.onBackground.copy(0.8f),
+//                                modifier = Modifier.padding(top = 8.dp) // Khoảng cách giữa icon và text
+//                            )
+//                        }
+//                    }
+//                }
+//            }
         }
     }
     if (showDialog) {
@@ -794,7 +806,35 @@ fun AuthorContentLib(navController: NavHostController, musicVM: MusicViewModel,l
         }
     }
 }
+@Composable
+fun AuthorFav(navController: NavHostController, musicVM: MusicViewModel,loginVM: LoginViewModel) {
+    val authorFavs by musicVM.authorFavList.collectAsState()
+    val userid by loginVM._currentUserId.collectAsState()
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            musicVM.getAuthorFavourite(userid.toString())
 
+            // Đợi 5 phút (5 * 60 * 1000 milliseconds)
+            delay(5 * 60 * 1000L) // 5 phút
+        }
+    }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(15.dp)
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(5.dp),
+            modifier = Modifier.fillMaxSize()
+        ){
+            authorFavs.let {
+                items(it.size){
+                    itemRowAuthor(navController = navController, author = authorFavs[it], musicVM = musicVM)
+                }
+            }
+        }
+    }
+}
 @Composable
 fun SongContentLib(navController: NavHostController, musicVM: MusicViewModel,loginVM: LoginViewModel) {
     val recentlySong by musicVM.songlistRecently.collectAsState()
@@ -802,7 +842,6 @@ fun SongContentLib(navController: NavHostController, musicVM: MusicViewModel,log
     LaunchedEffect(key1 = Unit) {
         while (true) {
             // Gọi hàm randomSongLoading và getRecentlySong
-            musicVM.getRecentlyList(userID = userid.toString(),3)
             musicVM.getFavListsInLibrary(userid.toString())
 
             // Đợi 5 phút (5 * 60 * 1000 milliseconds)
@@ -820,13 +859,42 @@ fun SongContentLib(navController: NavHostController, musicVM: MusicViewModel,log
         ){
             recentlySong?.let {
                 items(it.size){
-                    itemRowMusic(musicVM = musicVM, navController = navController, song = recentlySong!![it])
+                    itemRowMusic(musicVM = musicVM, navController = navController, song = recentlySong!![it], loginVM = loginVM)
                 }
             }
         }
     }
 }
+@Composable
+fun SongFav(navController: NavHostController, musicVM: MusicViewModel,loginVM: LoginViewModel) {
+    val favSongs by musicVM.favSongList.collectAsState()
+    val userid by loginVM._currentUserId.collectAsState()
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            // Gọi hàm randomSongLoading và getRecentlySong
+            musicVM.getFavSongList(userid.toString())
 
+            // Đợi 5 phút (5 * 60 * 1000 milliseconds)
+            delay(5 * 60 * 1000L) // 5 phút
+        }
+    }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(15.dp)
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(5.dp),
+            modifier = Modifier.fillMaxSize()
+        ){
+            favSongs.let {
+                items(it.size){
+                    itemRowMusic(musicVM = musicVM, navController = navController, song = favSongs[it], loginVM = loginVM)
+                }
+            }
+        }
+    }
+}
 @Composable
 fun PlaylistContentLib(navController: NavHostController, musicVM: MusicViewModel,loginVM:LoginViewModel) {
     val recentlyPlaylist by musicVM.playlistRecentlyList.collectAsState()
@@ -853,6 +921,36 @@ fun PlaylistContentLib(navController: NavHostController, musicVM: MusicViewModel
             recentlyPlaylist?.let {
                 items(it.size){
                     itemRowPlaylist(navController = navController, playlist = recentlyPlaylist!![it], musicVM = musicVM)
+                }
+            }
+        }
+    }
+}
+@Composable
+fun PlaylistFav(navController: NavHostController, musicVM: MusicViewModel,loginVM:LoginViewModel) {
+    val favPlaylist by musicVM.favPlaylist.collectAsState()
+    val userid by loginVM._currentUserId.collectAsState()
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            // Gọi hàm randomSongLoading và getRecentlySong
+            musicVM.getFavListsInLibrary(userid.toString())
+
+            // Đợi 5 phút (5 * 60 * 1000 milliseconds)
+            delay(5 * 60 * 1000L) // 5 phút
+        }
+    }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(15.dp)
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(5.dp),
+            modifier = Modifier.fillMaxSize()
+        ){
+            favPlaylist?.let {
+                items(it.size){
+                    itemRowPlaylist(navController = navController, playlist = favPlaylist!![it], musicVM = musicVM)
                 }
             }
         }
@@ -890,8 +988,356 @@ fun AlbumContentLib(navController: NavHostController, musicVM: MusicViewModel,lo
         }
     }
 }
+@Composable
+fun AlbumFav(navController: NavHostController, musicVM: MusicViewModel,loginVM: LoginViewModel) {
+    val favAlbum by musicVM.favAlbum.collectAsState()
+    val userid by loginVM._currentUserId.collectAsState()
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            // Gọi hàm randomSongLoading và getRecentlySong
+            musicVM.getFavListsInLibrary(userid.toString())
+
+            // Đợi 5 phút (5 * 60 * 1000 milliseconds)
+            delay(5 * 60 * 1000L) // 5 phút
+        }
+    }
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(15.dp)
+    ) {
+        LazyColumn(
+            contentPadding = PaddingValues(5.dp),
+            modifier = Modifier.fillMaxSize()
+        ){
+            favAlbum?.let {
+                items(it.size){
+                    itemRowAlbum(navController = navController, album = favAlbum!![it], musicVM = musicVM)
+                }
+            }
+        }
+    }
+}
+@Composable
+fun DownloadedScreen(
+    musicVM: MusicViewModel,
+    loginVM: LoginViewModel,
+    navController: NavHostController
+) {
+    val downloadedSong by musicVM.downloadedSong.collectAsState()
+    val isAsc by musicVM.isAsc.collectAsState()
+    LaunchedEffect(downloadedSong) {
+        musicVM.fetchDownloadedSongs()
+        delay(1000*60*5)
+    }
+    Box(
+        Modifier.fillMaxSize()
+            .zIndex(2f)
+            .statusBarsPadding()
+            .padding(horizontal = 15.dp)
+    ){
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ){
+            IconButton(onClick = {
+                navController.popBackStack()
+            }){
+                Icon(imageVector = Icons.AutoMirrored.Outlined.ArrowBack,contentDescription = null)
+            }
+            Row{
+                IconButton(
+                    onClick = {
+                        navController.navigate("dSearch")
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,contentDescription = null
+                    )
+                }
+                IconButton(
+                    onClick = {}
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.MoreVert,contentDescription = null
+                    )
+                }
+            }
+        }
+    }
+    LazyColumn(
+        Modifier.fillMaxSize()
+            .statusBarsPadding()
+            .padding(top = 60.dp,start = 15.dp,end = 15.dp)
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        item{
+            Column(
+                Modifier.fillMaxWidth()
+                    .statusBarsPadding(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    stringResource(R.string.downloaded),
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    downloadedSong.size.toString()+" "+stringResource(R.string.song),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+                CustomButton(onClick = {}, stringResource(R.string.random_playing_lib), textColor = Color.White , color = MaterialTheme.colorScheme.primary, enabled = true, fontWeight = FontWeight.Bold)
+            }
+            Column(
+                Modifier.fillMaxWidth()
+                    .padding(top = 15.dp)
+            ) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    Arrangement.SpaceBetween
+                ) {
+                    Row(
+
+                    ){
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_filter_list_24),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                            )
+                        Text(
+                            stringResource(R.string.filter),
+                            fontWeight = FontWeight.Light,
+                            fontSize = 12.sp
+                        )
+                    }
+                    Row(
+                        Modifier.
+                        clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            musicVM.setAscendingOrDescending()
+                            musicVM.fetchDownloadedSongs()
+                        }
+                    ){
+                        Text(
+                            if(isAsc){
+                                " A-Z"
+                            }else{
+                                " Z-A"
+                            },
+                            fontWeight = FontWeight.Light,
+                            fontSize = 12.sp
+                        )
+                        Icon(
+                            imageVector = Icons.Outlined.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onBackground.copy(0.5f)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                if (downloadedSong.isEmpty()) {
+                    // Hiển thị thông báo khi không có bài hát nào được tải về
+                    Text(text = "Chưa có lịch sử download", modifier = Modifier.align(Alignment.CenterHorizontally))
+                } else {
+                    downloadedSong.forEach { innerSongItem ->
+                        Spacer(modifier = Modifier.height(2.dp))
+                        itemRowMusic(musicVM, navController, loginVM,innerSongItem)
+                        Spacer(modifier = Modifier.height(2.dp))
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
-fun add() {
-    
+fun SearchDownloadedSong(
+    musicVM: MusicViewModel,
+    loginVM: LoginViewModel,
+    navController: NavHostController
+){
+    var searchText by remember {
+        mutableStateOf("")
+    }
+    val searchSong by musicVM.searchDSongs.collectAsState()
+    Box(Modifier.fillMaxSize()
+        .statusBarsPadding()
+        .zIndex(2f)){
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .background(MaterialTheme.colorScheme.surface),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                navController.popBackStack()
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_arrow_back_24),
+                    contentDescription = "back",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            BasicTextField(
+                value = searchText,
+                textStyle = TextStyle(
+                    color = MaterialTheme.colorScheme.onBackground, // Thay đổi màu chữ của văn bản
+                    fontSize = 14.sp // Kích thước chữ (tuỳ chọn)
+                ),
+                onValueChange = {
+                    searchText = it
+                    musicVM.getSongByNames(searchText)
+                },
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                decorationBox = { innerTextField ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(2.dp) // Điều chỉnh padding
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant,
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(
+                                horizontal = 8.dp,
+                                vertical = 4.dp
+                            ), // Padding xung quanh text
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search Icon",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier.weight(1f),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (searchText.isEmpty()) { // Giả sử input rỗng thì hiện placeholder
+                                Text(
+                                    text = "Tìm kiếm bài hát, nghệ sĩ,...",
+                                    color = Color.Gray
+                                )
+                                musicVM.getSongByNames("")
+                            }
+                            innerTextField() // Phần nhập liệu
+                        }
+                        if (searchText.isNotEmpty()) {
+                            IconButton(onClick = {
+                                searchText = ""
+                            })
+                            {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    tint = MaterialTheme.colorScheme.onBackground,
+                                    contentDescription = "Clear"
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    }
+    LazyColumn(
+        Modifier.fillMaxWidth()
+            .statusBarsPadding()
+            .padding(vertical = 60.dp, horizontal = 15.dp)
+    ) {
+        items(searchSong.size){
+            Spacer(Modifier.height(2.dp))
+            itemRowMusic(musicVM,navController,loginVM,searchSong[it])
+        }
+    }
+}
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterial3Api::class)
+@Composable
+fun FavouriteScreen(
+    musicVM:MusicViewModel,
+    navController: NavHostController,
+    loginVM: LoginViewModel
+){
+    val context = LocalContext.current
+    val addState by musicVM.addFavSong.collectAsState()
+    val delState by musicVM.delFavSong.collectAsState()
+    LaunchedEffect(addState) {
+        if(addState == 1){
+            Toast.makeText(context,R.string.add_to_fav_success,Toast.LENGTH_SHORT).show()
+        }else if(addState == 0){
+            Toast.makeText(context,R.string.add_to_fav_failure,Toast.LENGTH_SHORT).show()
+        }
+    }
+    LaunchedEffect(delState) {
+        if(delState == 1){
+            Toast.makeText(context,R.string.del_from_fav_success,Toast.LENGTH_SHORT).show()
+        }else if(delState == 0){
+            Toast.makeText(context,R.string.del_from_fav_failure,Toast.LENGTH_SHORT).show()
+        }
+    }
+
+        val tabItems = listOf("Playlist", "Album","Bài hát","Nghệ Sĩ")
+        val coroutineScope = rememberCoroutineScope()
+        val pagerState = rememberPagerState()
+
+        // Bọc giao diện trong Scaffold
+        Scaffold(
+            topBar = {
+                Column {
+                    // Navbar với các icon
+                    TopAppBar(
+                        title = { Text(stringResource(id = R.string.favourite),color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp) },
+                        navigationIcon = {
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back",tint = MaterialTheme.colorScheme.onBackground)
+                            }
+                        },
+                        actions = {
+                            IconButton(onClick = { /* Handle action */ }) {
+                                Icon(imageVector = Icons.Default.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onBackground)
+                            }
+                        },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant)
+                    )
+
+                    // TabRow cho TabLayout
+                    TabRow(
+                        selectedTabIndex = pagerState.currentPage,
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentColor = Color.White
+                    ) {
+                        tabItems.forEachIndexed { index, title ->
+                            Tab(
+                                selected = pagerState.currentPage == index,
+                                onClick = {
+                                    coroutineScope.launch {
+                                        pagerState.animateScrollToPage(index)
+                                    }
+                                },
+                                text = { Text(title) }
+                            )
+                        }
+                    }
+                }
+            }
+        ) { innerPadding ->
+            // Nội dung cuộn được
+            HorizontalPager(
+                count = tabItems.size,
+                state = pagerState,
+                modifier = Modifier.padding(innerPadding)
+            ) { page ->
+                when (page) {
+                    0 -> PlaylistFav(navController, musicVM, loginVM = loginVM) // Trang Playlist
+                    1 -> AlbumFav(navController, musicVM, loginVM = loginVM) // Trang Album
+                    2 -> SongFav(navController,musicVM, loginVM = loginVM)
+                    3 -> AuthorFav(navController,musicVM, loginVM = loginVM)
+                }
+            }
+        }
+
 }

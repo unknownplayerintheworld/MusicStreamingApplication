@@ -88,10 +88,17 @@ import java.time.ZoneId
 fun itemRowMusic(
     musicVM:MusicViewModel,
     navController: NavHostController,
+    loginVM: LoginViewModel,
     song: Song
 ) {
+    val userid by loginVM._currentUserId.collectAsState()
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+    val favSongList by musicVM.favSongList.collectAsState()
+    LaunchedEffect(Unit) {
+        userid?.let { musicVM.getFavSongList(it) }
+        delay(1000*60*10)
+    }
     Row(
         Modifier
             .fillMaxWidth()
@@ -115,7 +122,11 @@ fun itemRowMusic(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(model = ImageRequest.Builder(
-                    LocalContext.current).data(song.imageUrl).crossfade(true).build()),
+                    LocalContext.current).data(if(!song.imageUrl.isNullOrEmpty()){
+                        song.imageUrl
+                    }else{
+                        R.drawable.d3650077420d928b587a1feb77fa94cb
+                    }).crossfade(true).build()),
                 contentDescription = "recently",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -234,15 +245,28 @@ fun itemRowMusic(
                         Modifier
                             .fillMaxWidth()
                             .clickable {
-
-                                showBottomSheet = false
+                                userid?.let{
+                                    musicVM.getFavSongList(userid!!)
+                                }
+                                if(favSongList.any { it.id == song.id }){
+                                    userid?.let{
+                                        musicVM.delSongFromFav(userID = it,song)
+                                    }
+                                    showBottomSheet = true
+                                }else{
+                                    userid?.let { musicVM.addSongToFav(userID = it,song ) }
+                                    showBottomSheet = false   
+                                }
                             }
                             .height(60.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Fav")
                         Spacer(Modifier.width(10.dp))
-                        Text(text = stringResource(id = R.string.add_to_library), fontSize = 14.sp)
+                        Text(text = if(favSongList.any { it.id == song.id }){  stringResource(id = R.string.remove_from_fav) }
+                            else{
+                                stringResource(R.string.add_to_fav)
+                            }, fontSize = 14.sp)
                     }
                     Row(
                         Modifier
@@ -556,9 +580,11 @@ fun itemRowMusicPlaylist(
     navController: NavHostController,
     musicVM: MusicViewModel,
     song: Song,
+    loginVM: LoginViewModel,
     list: List<Song>,
     playlist: Playlist
 ) {
+    val userID by loginVM._currentUserId.collectAsState()
     var showBottomSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     Row(
@@ -703,7 +729,7 @@ fun itemRowMusicPlaylist(
                     ) {
                         Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "Fav")
                         Spacer(Modifier.width(10.dp))
-                        Text(text = stringResource(id = R.string.add_to_library), fontSize = 14.sp)
+                        Text(text = stringResource(id = R.string.add_to_fav), fontSize = 14.sp)
                     }
                     Row(
                         Modifier
@@ -721,22 +747,27 @@ fun itemRowMusicPlaylist(
                         Spacer(Modifier.width(10.dp))
                         Text(text = stringResource(id = R.string.add_to_player), fontSize = 14.sp)
                     }
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showBottomSheet = false
-                                musicVM.removeSongFromPlaylist(playlist = playlist, song = song)
-                            }
-                            .height(60.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Clear,
-                            contentDescription = "Remove from playlist"
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Text(text = stringResource(id = R.string.remove_from_playlist), fontSize = 14.sp)
+                    if(userID == playlist.userID) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showBottomSheet = false
+                                    musicVM.removeSongFromPlaylist(playlist = playlist, song = song)
+                                }
+                                .height(60.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Remove from playlist"
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = stringResource(id = R.string.remove_from_playlist),
+                                fontSize = 14.sp
+                            )
+                        }
                     }
                     Row(
                         Modifier
@@ -759,17 +790,27 @@ fun itemRowMusicPlaylist(
 
 @Composable
 fun itemRowLibrary(
+    navController: NavHostController,
     icon: ImageVector?= null,
     iconRes: Painter?= null,
     textRes: String,
     contentDescription : String,
-    color : Color
+    color : Color,
+    index: Int
 ) {
     Box(
         Modifier
             .size(100.dp)
             .clip(RoundedCornerShape(25.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickable {
+                when(index){
+                    1 -> navController.navigate("favourite")
+                    2 -> navController.navigate("downloaded")
+                    3 -> navController.navigate("upload")
+                    4 -> navController.navigate("authorFav")
+                }
+            }
             .padding(10.dp)
     ) {
         Column(
